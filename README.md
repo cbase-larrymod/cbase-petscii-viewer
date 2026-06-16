@@ -1,7 +1,8 @@
 # C\*Base PETSCII Viewer
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
-Part of the **C\*Base Larry Mod v3.1** development package.
+
+Part of the C*Base Larry Mod v3.1 development package.
 
 ---
 

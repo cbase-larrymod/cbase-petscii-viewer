@@ -1,4 +1,6 @@
 ﻿.vscode/**
+.claude/**
+CLAUDE.md
 src/**
 tmp/**
 dist/**

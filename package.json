@@ -1,5 +1,5 @@
 {
-    "name": "seq-viewer",
+    "name": "cbase-petscii-viewer",
     "displayName": "C*Base PETSCII Viewer",
     "description": "C64 PETSCII .seq and .petmate file viewer for C*Base BBS files",
     "version": "0.2.0-beta",

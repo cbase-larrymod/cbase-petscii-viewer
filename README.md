@@ -36,13 +36,13 @@ Visual Studio Code v1.105.0 or later.
 
 ## Installation
 
-Download `seq-viewer-0.2.0-beta.vsix` from the [repository](https://github.com/cbase-larrymod/cbase-petscii-viewer), then:
+Download `cbase-petscii-viewer-0.2.0-beta.vsix` from the [repository](https://github.com/cbase-larrymod/cbase-petscii-viewer), then:
 
 **Extensions panel:** `···` → Install from VSIX
 
 **Command line:**
 ```bash
-code --install-extension seq-viewer-0.2.0-beta.vsix
+code --install-extension cbase-petscii-viewer-0.2.0-beta.vsix
 ```
 
 ---

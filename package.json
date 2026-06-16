@@ -1,0 +1,57 @@
+{
+    "name": "seq-viewer",
+    "displayName": "C*Base PETSCII Viewer",
+    "description": "C64 PETSCII .seq and .petmate file viewer for C*Base BBS files",
+    "version": "0.2.0-beta",
+    "publisher": "cbase-larrymod",
+    "icon": "media/icon.png",
+    "license": "GPL-2.0-or-later",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cbase-larrymod/cbase-petscii-viewer.git"
+    },
+    "bugs": {
+        "url": "https://github.com/cbase-larrymod/cbase-petscii-viewer/issues"
+    },
+    "homepage": "https://github.com/cbase-larrymod/cbase-petscii-viewer#readme",
+    "keywords": ["petscii", "c64", "commodore 64", "bbs", "seq", "c*base"],
+    "engines": { "vscode": "^1.105.0" },
+    "categories": ["Other"],
+    "activationEvents": ["onCustomEditor:cbase.seqViewer", "onCustomEditor:cbase.petmateViewer"],
+    "main": "./out/extension",
+    "contributes": {
+        "customEditors": [
+            {
+                "viewType": "cbase.seqViewer",
+                "displayName": "PETSCII Viewer",
+                "selector": [{ "filenamePattern": "*.seq" }],
+                "priority": "default"
+            },
+            {
+                "viewType": "cbase.petmateViewer",
+                "displayName": "PETSCII Viewer (Petmate)",
+                "selector": [{ "filenamePattern": "*.petmate" }],
+                "priority": "default"
+            }
+        ],
+        "commands": [
+            {
+                "command": "cbase.openSeqFile",
+                "title": "C*Base: Open .seq File..."
+            },
+            {
+                "command": "cbase.openPetmateFile",
+                "title": "C*Base: Open .petmate File..."
+            }
+        ]
+    },
+    "scripts": {
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "package": "npm run compile && node -e \"const fs=require('fs'); if(!fs.existsSync('dist'))fs.mkdirSync('dist')\" && vsce package -o dist/"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.80.0",
+        "typescript": "^5.0.0"
+    }
+}

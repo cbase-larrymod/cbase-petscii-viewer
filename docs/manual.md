@@ -63,7 +63,7 @@ C\*Base PETSCII Viewer renders Commodore 64 BBS sequence files in Visual Studio 
 
 **Features:**
 - C64 bitmap rendering via embedded character ROM
-- Full 16-color C64 palette, four palette presets
+- Full 16-color C64 palette, ten palette presets
 - Uppercase/graphics and lowercase charset toggle
 - MCI command display toggle
 - CLS ($93) break indicator (`.seq` only)
@@ -141,7 +141,7 @@ Open a `.seq` file from the C\*Base BBS asset directory. The viewer displays the
 - **Lowercase charset** — uses the C64 lowercase character set
 - **MCI Commands visible** — inline command tokens are displayed
 - **CLS indicator off** — `$93` boundaries are not marked
-- **Petmate palette** — default C64 color palette
+- **CGTerm palette** — default C64 color palette
 - **Black background** — C64 default background color
 - **40-column width** — default row width
 
@@ -191,16 +191,22 @@ When hidden, the `$93` byte is decoded silently and has no visual effect.
 
 ### Palette Selector
 
-**Dropdown:** `Petmate` / `Colodore` / `Pepto` / `VICE`
+**Dropdown:** `Petmate` / `Colodore` / `Pepto (PAL)` / `Pepto (NTSC)` / `VICE` / `PALette` / `DeeKay` / `CGTerm` / `Community` / `Ptoing`
 
 Selects the color palette used to render all 16 C64 colors. Each palette is a different calibration of the C64's color output:
 
-| Palette  | Description                                                     |
-| -------- | --------------------------------------------------------------- |
-| Petmate  | Default. Colors from the Petmate C64 tool. Slightly warm tones. |
-| Colodore | High-accuracy calibration based on oscilloscope measurements.   |
-| Pepto    | Classic palette by Philip "Pepto" Timmermann.                   |
-| VICE     | Colors from the VICE C64 emulator.                              |
+| Palette       | Description                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| CGTerm        | Default. Terminal-optimized mapping from CGTerm 3.0.                                             |
+| Colodore      | Analog simulation model by Philip "Pepto" Timmermann, tuned to a Commodore 1084s monitor.        |
+| Community     | Community Colors palette by Retrofan et al. (VICE community-colors.vpl).                         |
+| DeeKay        | Artistic variant by DeeKay.                                                                      |
+| PALette       | Generic mathematical baseline palette.                                                           |
+| Pepto (PAL)   | Classic PAL palette by Philip "Pepto" Timmermann (pepto.de/projects/colorvic/2001). Authoritative measured values. |
+| Pepto (NTSC)  | NTSC variant of the Pepto palette (VICE pepto-ntsc.vpl).                                         |
+| Petmate       | Colors from the Petmate C64 tool. Slightly warm tones.                                           |
+| Ptoing        | Artist palette by Ptoing (VICE ptoing.vpl).                                                      |
+| VICE          | Colors from the VICE C64 emulator's default palette.                                             |
 
 ### Background Color Swatches
 
@@ -247,7 +253,7 @@ Shows or hides MCI command tokens. Detection is based on screen-code equivalents
 
 ### Palette Selector
 
-Same four palettes as the `.seq` viewer.
+Same ten palettes as the `.seq` viewer.
 
 ### Background Color Swatches
 
@@ -293,7 +299,7 @@ Settings are stored in VS Code workspace state. `.seq` and `.petmate` viewers ma
 | Setting                       | Default   |
 | ----------------------------- | --------- |
 | Charset (lowercase/uppercase) | Lowercase |
-| Palette                       | Petmate   |
+| Palette                       | CGTerm    |
 | Background color index        | 0 (Black) |
 | MCI Commands visible          | Yes       |
 | Show CLS ($93)                | No        |
@@ -304,7 +310,7 @@ Column width is **not** persisted — it resets to 40 each time a file is opened
 
 | Setting                       | Default   |
 | ----------------------------- | --------- |
-| Palette                       | Petmate   |
+| Palette                       | CGTerm    |
 | MCI Commands visible          | Yes       |
 | Charset (lowercase/uppercase) | Lowercase |
 

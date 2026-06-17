@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { decode, PetmatePage } from './petmateDecoder';
 import {
-    C64Color, PaletteName, PALETTES, PALETTE_NAMES, DEFAULT_PALETTE,
+    C64Color, PaletteName, PALETTES, PALETTE_NAMES, PALETTE_LABELS, DEFAULT_PALETTE,
 } from './colorPalette';
 import { getNonce } from './utils';
 
@@ -114,7 +114,7 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
         );
 
         const paletteOptions = PALETTE_NAMES
-            .map(n => `<option value="${n}"${n === state.paletteName ? ' selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`)
+            .map(n => `<option value="${n}"${n === state.paletteName ? ' selected' : ''}>${PALETTE_LABELS[n as PaletteName]}</option>`)
             .join('');
 
         const config = JSON.stringify({

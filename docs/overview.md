@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.2.1-beta
+**Version:** 0.3.1-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -16,7 +16,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 ## Features
 
 - C64 bitmap rendering via embedded character ROM (zero anti-aliasing)
-- Full 16-color palette with four presets: Petmate, Colodore, Pepto, VICE
+- Full 16-color palette with ten presets: Petmate, Colodore, Pepto (PAL), Pepto (NTSC), VICE, PALette, DeeKay, CGTerm, Community, Ptoing
 - Uppercase/graphics and lowercase charset toggle
 - MCI command display toggle (£-commands and @:-commands)
 - CLS ($93) break indicator — fluorescent green dotted line (`.seq` only)
@@ -44,7 +44,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 | Lowercase charset / Uppercase charset | Toggle between the two C64 character sets                  |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
 | Show CLS ($93)                        | Show a green dotted line at Clear Screen boundaries        |
-| Palette selector                      | Switch between Petmate, Colodore, Pepto, and VICE palettes |
+| Palette selector                      | Switch between ten palette presets                         |
 | Color swatches                        | Click a swatch to change the C64 background color          |
 | ↺                                     | Reset column width to 40 (appears only when width ≠ 40)    |
 | W×N                                   | Dimensions; click W to type a custom column count          |
@@ -59,7 +59,7 @@ Drag the right edge of the canvas to change column width (20–200).
 | Page X/N                              | Current page and total page count                          |
 | Lowercase charset / Uppercase charset | Toggle between the two C64 character sets                  |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
-| Palette selector                      | Switch between Petmate, Colodore, Pepto, and VICE palettes |
+| Palette selector                      | Switch between ten palette presets                         |
 | Color swatches                        | Click a swatch to override the page background color       |
 | W×H                                   | Canvas dimensions                                          |
 
@@ -91,5 +91,5 @@ Source code, issues, and releases:
 
 ---
 
-**Last updated:** 2026-06-16
+**Last updated:** 2026-06-17
 **License:** See [LICENSE.md](../LICENSE.md)

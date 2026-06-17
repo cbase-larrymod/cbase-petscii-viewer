@@ -35,6 +35,8 @@ export const PALETTES: Record<PaletteName, C64Color[]> = {
     ]),
 };
 
+export const PALETTE_NAMES: PaletteName[] = ['petmate', 'colodore', 'pepto', 'vice'];
+
 export const DEFAULT_PALETTE: PaletteName = 'petmate';
 export const DEFAULT_BG_INDEX = 0;   // Black
 export const DEFAULT_FG_INDEX = 14;  // Light blue (C64 BBS default)

@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import { decode, PetmatePage } from './petmateDecoder';
 import {
-    C64Color, PaletteName, PALETTES, DEFAULT_PALETTE,
+    C64Color, PaletteName, PALETTES, PALETTE_NAMES, DEFAULT_PALETTE,
 } from './colorPalette';
+import { getNonce } from './utils';
 
 interface ViewerState {
     paletteName: PaletteName;
@@ -70,11 +71,15 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
                 case 'toggleCharset':
                     state.lowercase = !state.lowercase;
                     await this.context.workspaceState.update(stateKey, { ...state });
+                    // The webview renders the charset toggle locally (petmateViewer.js re-renders
+                    // itself), so no 'render' message is needed here. This handler only persists
+                    // state so that it is restored correctly if the panel is ever rebuilt.
                     break;
 
                 case 'toggleMci':
                     state.showMci = !state.showMci;
                     await this.context.workspaceState.update(stateKey, { ...state });
+                    // Same as toggleCharset: the webview handles this locally; we only persist.
                     break;
             }
         });
@@ -101,12 +106,14 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
         palette: C64Color[]
     ): string {
         const nonce = getNonce();
+        const charRomUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'media', 'charRom.js')
+        );
         const scriptUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, 'media', 'petmateViewer.js')
         );
 
-        const paletteNames: PaletteName[] = ['petmate', 'colodore', 'pepto', 'vice'];
-        const paletteOptions = paletteNames
+        const paletteOptions = PALETTE_NAMES
             .map(n => `<option value="${n}"${n === state.paletteName ? ' selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`)
             .join('');
 
@@ -201,6 +208,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   <canvas id="content"></canvas>
 </div>
 <script nonce="${nonce}">window.__PETMATE_CONFIG = ${config};</script>
+<script nonce="${nonce}" src="${charRomUri}"></script>
 <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
@@ -210,13 +218,4 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
 function escapeHtml(s: string): string {
     const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
     return s.replace(/[&<>"']/g, c => map[c]);
-}
-
-function getNonce(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let nonce = '';
-    for (let i = 0; i < 32; i++) {
-        nonce += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return nonce;
 }

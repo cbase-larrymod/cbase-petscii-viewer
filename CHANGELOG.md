@@ -3,22 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.1-beta] - 2026-06-17
 
-### Added
+### Changed
 
-- **Two new color palettes** — Community (Retrofan et al., sourced from `VICE/community-colors.vpl`) and Ptoing (sourced from `VICE/ptoing.vpl`). All viewers now offer ten palettes total.
-
----
-
-## [0.3.0-beta] - 2026-06-17
-
-### Added
-
-- **Four new color palettes** — PALette (generic mathematical baseline), DeeKay (artistic variant), CGTerm (terminal-optimized mapping), Pepto (NTSC). All viewers offered eight palettes total.
-
-### Fixed
-
-- **Palette color accuracy** — Petmate, Colodore, and VICE palette values were incorrect (sourced from screendumps). All four original palettes are now sourced from authoritative references: Petmate, Colodore, and VICE from Petmate9; Pepto (PAL) from `pepto.de/projects/colorvic/2001/` and cross-verified against `VICE/pepto-pal.vpl` (both sources are identical).
-- **Palette display names** — palette `<option>` labels are now driven by an explicit `PALETTE_LABELS` map rather than a title-case transform. "PALette", "DeeKay", and "CGTerm" render correctly instead of "Palgeneric", "Deekay", and "Cgterm".
+- **Color palettes rebuilt from authoritative sources** — seven palettes, each sourced directly from an official repository. CGTerm from `CGTerm-3.0/src/gfx.c`; Pepto (PAL) and Pepto (NTSC) from `VICE/pepto-pal.vpl` and `VICE/pepto-ntsc.vpl`; VICE internal palette (chip 6569R5, Tobias measurements) from `VICE/palette_6569R5_v1r.vpl`; PALette by PAL/Offence from `VICE/palette.vpl`; Colodore and Petmate from Petmate9 `src/utils/palette.ts`. CGTerm and Pepto (PAL) share identical values — CGTerm 3.0 uses Pepto (PAL) as its built-in palette.
+- **Default palette** — CGTerm.
+- **Palette display names** — driven by an explicit `PALETTE_LABELS` map so names like "Pepto (PAL)" and "PALette" render correctly.
 
 ---
 

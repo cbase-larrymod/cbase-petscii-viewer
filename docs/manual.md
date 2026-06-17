@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.2.1-beta
+**Version:** 0.3.1-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -63,7 +63,7 @@ C\*Base PETSCII Viewer renders Commodore 64 BBS sequence files in Visual Studio 
 
 **Features:**
 - C64 bitmap rendering via embedded character ROM
-- Full 16-color C64 palette, ten palette presets
+- Full 16-color C64 palette, seven palette presets
 - Uppercase/graphics and lowercase charset toggle
 - MCI command display toggle
 - CLS ($93) break indicator (`.seq` only)
@@ -99,13 +99,13 @@ cd cbase-petscii-viewer
 1. Open Extensions panel (`Ctrl+Shift+X` or `Cmd+Shift+X`)
 2. Click the `⋯` menu (top-right of the panel)
 3. Select **Install from VSIX**
-4. Navigate to `cbase-petscii-viewer-0.2.1-beta.vsix`
+4. Navigate to `cbase-petscii-viewer-0.3.1-beta.vsix`
 5. Click **Install**
 
 **Install via command line:**
 
 ```bash
-code --install-extension cbase-petscii-viewer-0.2.1-beta.vsix
+code --install-extension cbase-petscii-viewer-0.3.1-beta.vsix
 ```
 
 #### Method 2: Build and install from source
@@ -117,7 +117,7 @@ npm install
 npm run package
 ```
 
-The package command creates `dist/cbase-petscii-viewer-0.2.1-beta.vsix`. Install using Method 1.
+The package command creates `dist/cbase-petscii-viewer-0.3.1-beta.vsix`. Install using Method 1.
 
 #### Method 3: Development installation
 
@@ -191,22 +191,19 @@ When hidden, the `$93` byte is decoded silently and has no visual effect.
 
 ### Palette Selector
 
-**Dropdown:** `Petmate` / `Colodore` / `Pepto (PAL)` / `Pepto (NTSC)` / `VICE` / `PALette` / `DeeKay` / `CGTerm` / `Community` / `Ptoing`
+**Dropdown:** `CGTerm` / `Colodore` / `PALette` / `Pepto (PAL)` / `Pepto (NTSC)` / `Petmate` / `VICE`
 
 Selects the color palette used to render all 16 C64 colors. Each palette is a different calibration of the C64's color output:
 
-| Palette       | Description                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| CGTerm        | Default. Terminal-optimized mapping from CGTerm 3.0.                                             |
-| Colodore      | Analog simulation model by Philip "Pepto" Timmermann, tuned to a Commodore 1084s monitor.        |
-| Community     | Community Colors palette by Retrofan et al. (VICE community-colors.vpl).                         |
-| DeeKay        | Artistic variant by DeeKay.                                                                      |
-| PALette       | Generic mathematical baseline palette.                                                           |
-| Pepto (PAL)   | Classic PAL palette by Philip "Pepto" Timmermann (pepto.de/projects/colorvic/2001). Authoritative measured values. |
-| Pepto (NTSC)  | NTSC variant of the Pepto palette (VICE pepto-ntsc.vpl).                                         |
-| Petmate       | Colors from the Petmate C64 tool. Slightly warm tones.                                           |
-| Ptoing        | Artist palette by Ptoing (VICE ptoing.vpl).                                                      |
-| VICE          | Colors from the VICE C64 emulator's default palette.                                             |
+| Palette      | Source                             | Description                                                                    |
+| ------------ | ---------------------------------- | ------------------------------------------------------------------------------ |
+| CGTerm       | CGTerm-3.0 `src/gfx.c`            | Default. Built-in palette from CGTerm 3.0 — identical to Pepto (PAL).         |
+| Colodore     | Petmate9 `src/utils/palette.ts`    | Analog simulation model by Philip "Pepto" Timmermann.                          |
+| PALette      | VICE `palette.vpl`                 | Palette by PAL/Offence.                                                        |
+| Pepto (PAL)  | VICE `pepto-pal.vpl`               | PAL calibration by Philip "Pepto" Timmermann. Authoritative measured values.   |
+| Pepto (NTSC) | VICE `pepto-ntsc.vpl`              | NTSC variant of the Pepto palette.                                             |
+| Petmate      | Petmate9 `src/utils/palette.ts`    | Colors from the Petmate C64 tool.                                              |
+| VICE         | VICE `palette_6569R5_v1r.vpl`      | VICE internal palette — chip 6569R5 (Tobias measurements).                     |
 
 ### Background Color Swatches
 
@@ -355,7 +352,7 @@ Cross-check rendering against VICE emulator output for ground truth.
 
 ```bash
 npx tsc                         # compile TypeScript → out/
-npm run package                 # compile + create dist/cbase-petscii-viewer-0.2.1-beta.vsix
+npm run package                 # compile + create dist/cbase-petscii-viewer-0.3.1-beta.vsix
 ```
 
 Always run `npx tsc` (not `npx tsc --noEmit`) before packaging. The `--noEmit` flag skips output file generation.
@@ -465,6 +462,6 @@ Both `$0D` and `$8D` are handled identically. A file may use either or mix both.
 
 ---
 
-**Last updated:** 2026-06-16
-**Version:** 0.2.1-beta
+**Last updated:** 2026-06-17
+**Version:** 0.3.1-beta
 **License:** See [LICENSE.md](../LICENSE.md)

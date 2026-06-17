@@ -16,7 +16,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 ## Features
 
 - C64 bitmap rendering via embedded character ROM (zero anti-aliasing)
-- Full 16-color palette with ten presets: Petmate, Colodore, Pepto (PAL), Pepto (NTSC), VICE, PALette, DeeKay, CGTerm, Community, Ptoing
+- Full 16-color palette with seven presets: CGTerm, Colodore, PALette, Pepto (PAL), Pepto (NTSC), Petmate, VICE
 - Uppercase/graphics and lowercase charset toggle
 - MCI command display toggle (£-commands and @:-commands)
 - CLS ($93) break indicator — fluorescent green dotted line (`.seq` only)
@@ -44,7 +44,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 | Lowercase charset / Uppercase charset | Toggle between the two C64 character sets                  |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
 | Show CLS ($93)                        | Show a green dotted line at Clear Screen boundaries        |
-| Palette selector                      | Switch between ten palette presets                         |
+| Palette selector                      | Switch between seven palette presets                       |
 | Color swatches                        | Click a swatch to change the C64 background color          |
 | ↺                                     | Reset column width to 40 (appears only when width ≠ 40)    |
 | W×N                                   | Dimensions; click W to type a custom column count          |
@@ -59,7 +59,7 @@ Drag the right edge of the canvas to change column width (20–200).
 | Page X/N                              | Current page and total page count                          |
 | Lowercase charset / Uppercase charset | Toggle between the two C64 character sets                  |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
-| Palette selector                      | Switch between ten palette presets                         |
+| Palette selector                      | Switch between seven palette presets                       |
 | Color swatches                        | Click a swatch to override the page background color       |
 | W×H                                   | Canvas dimensions                                          |
 

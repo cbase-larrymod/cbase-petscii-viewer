@@ -9,7 +9,7 @@ Part of the C*Base Larry Mod v3.1 development package.
 ## Features
 
 - C64 bitmap rendering via embedded character ROM — no font installation required
-- Full 16-color C64 palette with ten presets: Petmate, Colodore, Pepto (PAL), Pepto (NTSC), VICE, PALette, DeeKay, CGTerm, Community, Ptoing
+- Full 16-color C64 palette with seven presets: CGTerm, Colodore, PALette, Pepto (PAL), Pepto (NTSC), Petmate, VICE
 - Uppercase/graphics and lowercase charset toggle
 - MCI command display toggle (`£`-commands and `@:`-commands)
 - CLS (`$93`) break indicator

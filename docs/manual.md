@@ -195,15 +195,15 @@ When hidden, the `$93` byte is decoded silently and has no visual effect.
 
 Selects the color palette used to render all 16 C64 colors. Each palette is a different calibration of the C64's color output:
 
-| Palette      | Source                             | Description                                                                    |
-| ------------ | ---------------------------------- | ------------------------------------------------------------------------------ |
-| CGTerm       | CGTerm-3.0 `src/gfx.c`            | Default. Built-in palette from CGTerm 3.0 — identical to Pepto (PAL).         |
-| Colodore     | Petmate9 `src/utils/palette.ts`    | Analog simulation model by Philip "Pepto" Timmermann.                          |
-| PALette      | VICE `palette.vpl`                 | Palette by PAL/Offence.                                                        |
-| Pepto (PAL)  | VICE `pepto-pal.vpl`               | PAL calibration by Philip "Pepto" Timmermann. Authoritative measured values.   |
-| Pepto (NTSC) | VICE `pepto-ntsc.vpl`              | NTSC variant of the Pepto palette.                                             |
-| Petmate      | Petmate9 `src/utils/palette.ts`    | Colors from the Petmate C64 tool.                                              |
-| VICE         | VICE `palette_6569R5_v1r.vpl`      | VICE internal palette — chip 6569R5 (Tobias measurements).                     |
+| Palette      | Program    | Source                                                               | Description                                                                  |
+| :----------- | :--------- | :------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| CGTerm       | CGTerm-3.0 | github.com/unbreached/CGTerm-3.0/src/gfx.c                           | Default. Built-in palette from CGTerm 3.0 — identical to Pepto (PAL).        |
+| Colodore     | Petmate9   | github.com/wbochar/petmate9/src/utils/palette.ts                     | Analog simulation model by Philip "Pepto" Timmermann.                        |
+| PALette      | VICE       | github.com/VICE-Team/svn-mirror/vice/data/C64/palette.vpl            | Palette by PAL/Offence.                                                      |
+| Pepto (PAL)  | VICE       | github.com/VICE-Team/svn-mirror//vice/data/C64/pepto-pal.vpl         | PAL calibration by Philip "Pepto" Timmermann. Authoritative measured values. |
+| Pepto (NTSC) | VICE       | github.com/VICE-Team/svn-mirror//vice/data/C64/pepto-ntsc.vpl        | NTSC variant of the Pepto palette.                                           |
+| Petmate      | Petmate9   | github.com/wbochar/petmate9/src/utils/palette.ts                     | Colors from the Petmate C64 tool.                                            |
+| VICE         | VICE       | github.com/VICE-Team/svn-mirror/vice/data/C64/palette_6569R5_v1r.vpl | VICE internal palette — chip 6569R5 (Tobias measurements).                   |
 
 ### Background Color Swatches
 

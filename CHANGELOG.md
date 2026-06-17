@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.2.1-beta] - 2026-06-17
+
+### Changed
+
+- **Shared character ROM** — C64 ROM blob and `hexRgb` helper moved to a single `charRom.js` script loaded by both viewers. Previously duplicated verbatim in `viewer.js` and `petmateViewer.js`.
+- **Shared `getNonce()`** — extracted to `src/utils.ts`; was duplicated in both editor providers.
+- **`PALETTE_NAMES` constant** — exported from `colorPalette.ts`; was duplicated as a local array in both providers.
+- **Decode caching in `.seq` viewer** — PETSCII byte decoding is now cached per file. Toggling MCI visibility reuses the cached rows instead of re-decoding the full byte stream. Re-decode only happens when charset or column count changes.
+- **DOM construction in dimensions display** — `updateDimensions` builds the column-count span via DOM API instead of `innerHTML`, avoiding a re-query-by-id on every render.
+
+### Fixed
+
+- **`petmateDecoder` error messages** — malformed `.petmate` files with out-of-range `screens` indices or missing `framebuf` arrays now throw descriptive errors instead of opaque `Cannot read properties of undefined` exceptions.
+
 ## [0.2.0-beta] - 2026-06-16
 
 ### Added

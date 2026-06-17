@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.2.0-beta
+**Version:** 0.2.1-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---

@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { decode, DecodedChar } from './petsciiDecoder';
 import {
-    C64Color, PaletteName, PALETTES,
+    C64Color, PaletteName, PALETTES, PALETTE_NAMES,
     DEFAULT_BG_INDEX, DEFAULT_PALETTE,
 } from './colorPalette';
+import { getNonce } from './utils';
 
 interface ViewerState {
     lowercase: boolean;
@@ -57,18 +58,22 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
         let palette = PALETTES[state.paletteName];
         let viewCols = 40; // not persisted — resets to 40 on each file open
 
+        // Decode once up front; re-decode only when charset or column count changes.
+        let decoded = decodeContent(data, state.lowercase, viewCols);
+
         webviewPanel.webview.html = this.buildWebviewHtml(
-            webviewPanel.webview, data, state, palette, viewCols
+            webviewPanel.webview, decoded, state, palette, viewCols
         );
 
         const subscription = webviewPanel.webview.onDidReceiveMessage(async (msg) => {
             switch (msg.type) {
                 case 'toggleCharset':
                     state.lowercase = !state.lowercase;
+                    decoded = decodeContent(data, state.lowercase, viewCols); // charset affects PUA codepoints
                     await this.context.workspaceState.update(stateKey, { ...state });
                     webviewPanel.webview.postMessage({
                         type: 'render',
-                        chars: buildContent(data, state.lowercase, state.showMci, viewCols).chars,
+                        chars: buildChars(decoded, state.showMci).chars,
                         cols: viewCols,
                         lowercase: state.lowercase,
                         showMci: state.showMci,
@@ -81,7 +86,7 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
                     await this.context.workspaceState.update(stateKey, { ...state });
                     webviewPanel.webview.postMessage({
                         type: 'render',
-                        chars: buildContent(data, state.lowercase, state.showMci, viewCols).chars,
+                        chars: buildChars(decoded, state.showMci).chars, // reuse cached rows, no re-decode
                         cols: viewCols,
                         lowercase: state.lowercase,
                         showMci: state.showMci,
@@ -113,9 +118,10 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
                 case 'setCols':
                     viewCols = Math.max(20, Math.min(200, msg.cols as number));
+                    decoded = decodeContent(data, state.lowercase, viewCols); // cols affects row wrapping
                     webviewPanel.webview.postMessage({
                         type: 'render',
-                        chars: buildContent(data, state.lowercase, state.showMci, viewCols).chars,
+                        chars: buildChars(decoded, state.showMci).chars,
                         cols: viewCols,
                         lowercase: state.lowercase,
                         showMci: state.showMci,
@@ -130,20 +136,22 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
     private buildWebviewHtml(
         webview: vscode.Webview,
-        data: Uint8Array,
+        decoded: { rows: DecodedChar[][]; clsBeforeRows: number[] },
         state: ViewerState,
         palette: C64Color[],
         cols: number
     ): string {
         const nonce = getNonce();
+        const charRomUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'media', 'charRom.js')
+        );
         const scriptUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, 'media', 'viewer.js')
         );
         const bgHex = palette[state.bgIndex].hex;
-        const { chars, clsBeforeRows, rowCount } = buildContent(data, state.lowercase, state.showMci, cols);
+        const { chars, clsBeforeRows, rowCount } = buildChars(decoded, state.showMci);
 
-        const paletteNames: PaletteName[] = ['petmate', 'colodore', 'pepto', 'vice'];
-        const paletteOptions = paletteNames
+        const paletteOptions = PALETTE_NAMES
             .map(n => `<option value="${n}"${n === state.paletteName ? ' selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`)
             .join('');
 
@@ -287,6 +295,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   </div>
 </div>
 <script nonce="${nonce}">window.__SEQ_CONFIG = ${config};</script>
+<script nonce="${nonce}" src="${charRomUri}"></script>
 <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
@@ -336,22 +345,19 @@ function stripMciFromRow(row: DecodedChar[]): DecodedChar[] {
     return result;
 }
 
-function buildContent(data: Uint8Array, lowercase: boolean, showMci: boolean, cols: number): { chars: CharCell[][]; clsBeforeRows: number[]; rowCount: number } {
-    let { rows, clsBeforeRows } = decode(data, lowercase, cols);
-    if (!showMci) {
-        rows = rows.map(stripMciFromRow);
-    }
+// Decode raw bytes into rows. Call this when charset or column count changes.
+function decodeContent(data: Uint8Array, lowercase: boolean, cols: number): { rows: DecodedChar[][]; clsBeforeRows: number[] } {
+    return decode(data, lowercase, cols);
+}
+
+// Build char cells from already-decoded rows. Avoids re-decoding when only MCI visibility changes.
+function buildChars(
+    decoded: { rows: DecodedChar[][]; clsBeforeRows: number[] },
+    showMci: boolean
+): { chars: CharCell[][]; clsBeforeRows: number[]; rowCount: number } {
+    const rows = showMci ? decoded.rows : decoded.rows.map(stripMciFromRow);
     const chars: CharCell[][] = rows.map(row =>
         row.map(ch => ({ cp: ch.codePoint, r: ch.reverse, f: ch.fgIndex }))
     );
-    return { chars, clsBeforeRows, rowCount: rows.length };
-}
-
-function getNonce(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let nonce = '';
-    for (let i = 0; i < 32; i++) {
-        nonce += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return nonce;
+    return { chars, clsBeforeRows: decoded.clsBeforeRows, rowCount: decoded.rows.length };
 }

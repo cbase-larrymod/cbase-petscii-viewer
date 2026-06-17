@@ -40,8 +40,14 @@ export function decode(jsonText: string): PetmatePage[] {
     const ws: PetmateWorkspaceJson = JSON.parse(jsonText);
     const screens = ws.screens ?? [];
 
-    return screens.map(idx => {
+    return screens.map((idx, screenPos) => {
+        if (idx < 0 || idx >= (ws.framebufs?.length ?? 0)) {
+            throw new Error(`screens[${screenPos}] references framebuf index ${idx}, which is out of range (${ws.framebufs?.length ?? 0} framebufs)`);
+        }
         const fb = ws.framebufs[idx];
+        if (!Array.isArray(fb.framebuf)) {
+            throw new Error(`framebuf[${idx}] has no framebuf array`);
+        }
 
         if (fb.charset !== 'upper' && fb.charset !== 'lower') {
             return {

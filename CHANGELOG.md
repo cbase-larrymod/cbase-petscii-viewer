@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.1-beta] - 2026-06-17
+
+### Changed
+
+- **Color palettes rebuilt from authoritative sources** — seven palettes, each sourced directly from an official repository. CGTerm from `CGTerm-3.0/src/gfx.c`; Pepto (PAL) and Pepto (NTSC) from `VICE/pepto-pal.vpl` and `VICE/pepto-ntsc.vpl`; VICE internal palette (chip 6569R5, Tobias measurements) from `VICE/palette_6569R5_v1r.vpl`; PALette by PAL/Offence from `VICE/palette.vpl`; Colodore and Petmate from Petmate9 `src/utils/palette.ts`. CGTerm and Pepto (PAL) share identical values — CGTerm 3.0 uses Pepto (PAL) as its built-in palette.
+- **Default palette** — CGTerm.
+- **Palette display names** — driven by an explicit `PALETTE_LABELS` map so names like "Pepto (PAL)" and "PALette" render correctly.
+
+---
+
 ## [0.2.1-beta] - 2026-06-17
 
 ### Changed

@@ -369,8 +369,11 @@ Always run `npx tsc` (not `npx tsc --noEmit`) before packaging. The `--noEmit` f
 | ----- | ------------ | -------------------------------------------------- |
 | `$0D` | Return       | Flush row, start new row                           |
 | `$8D` | Shift+Return | Flush row, start new row (common in C64 BBS files) |
+| `$88` | F7           | Flush row, start new row (C*Base soft line break)  |
 
-When `$0D` or `$8D` immediately follows an auto-wrap (a row that reached the column limit and wrapped automatically), the terminator is ignored to prevent a spurious blank row.
+When any row terminator immediately follows an auto-wrap (a row that reached the column limit and wrapped automatically), the terminator is ignored to prevent a spurious blank row.
+
+`$88` (F7) is used by C*Base as a soft line break in message text — the BBS inserts it at word boundaries to wrap long lines before sending them to the terminal.
 
 #### Color codes
 
@@ -405,7 +408,7 @@ Color codes change the foreground color for all subsequent characters until anot
 
 #### Stripped codes (silently ignored)
 
-`$00` NUL, `$03` RUN/STOP, `$0A` LF, `$08`/`$09` C=-Shift disable/enable, `$0E` lowercase charset switch, `$0F` unused, `$11`/`$91` cursor down/up, `$13` Home, `$17` cursor right variant, `$1D`/`$9D` cursor right/left, `$8E` uppercase charset switch, `$85`–`$8C` F1–F8, `$94` Insert.
+`$00` NUL, `$03` RUN/STOP, `$0A` LF, `$08`/`$09` C=-Shift disable/enable, `$0E` lowercase charset switch, `$0F` unused, `$11`/`$91` cursor down/up, `$13` Home, `$17` cursor right variant, `$1D`/`$9D` cursor right/left, `$8E` uppercase charset switch, `$85`–`$87` F1–F3, `$89`–`$8C` F5–F8, `$94` Insert.
 
 Any other byte in the control code range (`< $20` or `$80`–`$9F`) not listed above is rendered as a placeholder middle-dot character (`·`).
 

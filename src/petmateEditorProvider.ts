@@ -8,7 +8,6 @@ import { getNonce } from './utils';
 interface ViewerState {
     paletteName: PaletteName;
     showMci: boolean;
-    lowercase: boolean;
 }
 
 export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvider {
@@ -33,13 +32,12 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
 
         const stateKey = 'petmateViewer:settings';
         const state: ViewerState = this.context.workspaceState.get<ViewerState>(stateKey)
-            ?? { paletteName: DEFAULT_PALETTE, showMci: true, lowercase: true };
+            ?? { paletteName: DEFAULT_PALETTE, showMci: true };
 
         if (!(state.paletteName in PALETTES)) {
             state.paletteName = DEFAULT_PALETTE;
         }
         if (state.showMci === undefined) { state.showMci = true; }
-        if (state.lowercase === undefined) { state.lowercase = true; }
 
         const data = await vscode.workspace.fs.readFile(document.uri);
         const text = new TextDecoder('utf-8').decode(data);
@@ -66,14 +64,6 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
                         type: 'paletteChange',
                         palette: palette.map(c => c.hex),
                     });
-                    break;
-
-                case 'toggleCharset':
-                    state.lowercase = !state.lowercase;
-                    await this.context.workspaceState.update(stateKey, { ...state });
-                    // The webview renders the charset toggle locally (petmateViewer.js re-renders
-                    // itself), so no 'render' message is needed here. This handler only persists
-                    // state so that it is restored correctly if the panel is ever rebuilt.
                     break;
 
                 case 'toggleMci':
@@ -121,7 +111,6 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
             palette: palette.map(c => c.hex),
             paletteName: state.paletteName,
             showMci: state.showMci,
-            lowercase: state.lowercase,
             pages,
         });
 
@@ -198,7 +187,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   <button id="prev-btn">&#8249;</button>
   <span id="page-indicator"></span>
   <button id="next-btn">&#8250;</button>
-  <button id="charset-btn">${state.lowercase ? 'Lowercase charset' : 'Uppercase charset'}</button>
+  <button id="charset-btn">Lowercase charset</button>
   <button id="mci-btn"${state.showMci ? '' : ' class="mci-hidden"'}>MCI Commands</button>
   <select id="palette-select">${paletteOptions}</select>
   <div id="swatches"></div>

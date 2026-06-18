@@ -63,8 +63,9 @@
     const pages = config.pages;
     let pageIndex = 0;
     let showMci = config.showMci !== false;
-    let currentLowercase = config.lowercase !== false;
-    const bgOverride = {}; // pageIndex -> palette index, session-only, not persisted
+    let currentLowercase = true;
+    const bgOverride = {};       // pageIndex -> palette index, session-only
+    const charsetOverride = {};  // pageIndex -> boolean, set when user manually toggles
 
     function activeBgIndex(page, idx) {
         return bgOverride[idx] !== undefined ? bgOverride[idx] : page.bgIndex;
@@ -91,6 +92,12 @@
         prevBtn.disabled = pageIndex === 0;
         nextBtn.disabled = pageIndex === pages.length - 1;
         dimensions.textContent = page.width + '\u00D7' + page.height;
+
+        // Apply the page's stored charset unless the user has manually overridden it this session.
+        currentLowercase = charsetOverride[pageIndex] !== undefined
+            ? charsetOverride[pageIndex]
+            : page.lowercase;
+        charsetBtn.textContent = currentLowercase ? 'Lowercase charset' : 'Uppercase charset';
 
         const W = page.width * 8;
         const H = page.height * 8;
@@ -158,11 +165,8 @@
     });
     charsetBtn.addEventListener('click', () => {
         currentLowercase = !currentLowercase;
-        charsetBtn.textContent = currentLowercase ? 'Lowercase charset' : 'Uppercase charset';
+        charsetOverride[pageIndex] = currentLowercase; // remember manual override for this page
         renderPage();
-        // Notify host for state persistence only — the host sends no render message back
-        // because renderPage() above has already updated the canvas locally.
-        vscode.postMessage({ type: 'toggleCharset' });
     });
     mciBtn.addEventListener('click', () => {
         showMci = !showMci;

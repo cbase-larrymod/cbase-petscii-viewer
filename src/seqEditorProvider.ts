@@ -55,12 +55,10 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
         const data = await vscode.workspace.fs.readFile(document.uri);
 
-        // If the file starts with a charset switch code in the first 10 bytes,
-        // use it as the initial charset regardless of the persisted setting.
-        const detectedCharset = detectCharset(data);
-        if (detectedCharset !== null) {
-            state.lowercase = detectedCharset;
-        }
+        // Charset always starts from the file's own indicator ($0E/$8E in first 10 bytes).
+        // If no indicator is found, default to lowercase. Persisted state is not used for
+        // initial charset — the file (or absence of an indicator) determines it.
+        state.lowercase = detectCharset(data) ?? true;
 
         let palette = PALETTES[state.paletteName];
         let viewCols = 40; // not persisted — resets to 40 on each file open

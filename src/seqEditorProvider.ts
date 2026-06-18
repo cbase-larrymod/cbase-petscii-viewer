@@ -55,6 +55,13 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
         const data = await vscode.workspace.fs.readFile(document.uri);
 
+        // If the file starts with a charset switch code in the first 10 bytes,
+        // use it as the initial charset regardless of the persisted setting.
+        const detectedCharset = detectCharset(data);
+        if (detectedCharset !== null) {
+            state.lowercase = detectedCharset;
+        }
+
         let palette = PALETTES[state.paletteName];
         let viewCols = 40; // not persisted — resets to 40 on each file open
 
@@ -348,6 +355,17 @@ function stripMciFromRow(row: DecodedChar[]): DecodedChar[] {
 // Decode raw bytes into rows. Call this when charset or column count changes.
 function decodeContent(data: Uint8Array, lowercase: boolean, cols: number): { rows: DecodedChar[][]; clsBeforeRows: number[] } {
     return decode(data, lowercase, cols);
+}
+
+// Scan the first 10 bytes for a charset switch code.
+// $0E → lowercase; $8E → uppercase. First match wins. Returns null if neither found.
+function detectCharset(data: Uint8Array): boolean | null {
+    const limit = Math.min(10, data.length);
+    for (let i = 0; i < limit; i++) {
+        if (data[i] === 0x0E) { return true; }
+        if (data[i] === 0x8E) { return false; }
+    }
+    return null;
 }
 
 // Build char cells from already-decoded rows. Avoids re-decoding when only MCI visibility changes.

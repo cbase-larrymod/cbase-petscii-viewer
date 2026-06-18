@@ -10,7 +10,7 @@ Part of the C*Base Larry Mod v3.1 development package.
 
 - C64 bitmap rendering via embedded character ROM — no font installation required
 - Full 16-color C64 palette with seven presets: CGTerm, Colodore, PALette, Pepto (PAL), Pepto (NTSC), Petmate, VICE
-- Uppercase/graphics and lowercase charset toggle
+- Charset auto-detection — `.seq` files open in the charset encoded in the file; `.petmate` pages switch charset automatically per page
 - MCI command display toggle (`£`-commands and `@:`-commands)
 - CLS (`$93`) break indicator
 - VS Code theme-aware background
@@ -37,13 +37,13 @@ Visual Studio Code v1.105.0 or later.
 
 ## Installation
 
-Download `cbase-petscii-viewer-0.3.1-beta.vsix` from the [repository](https://github.com/cbase-larrymod/cbase-petscii-viewer), then:
+Download `cbase-petscii-viewer-0.3.2-beta.vsix` from the [repository](https://github.com/cbase-larrymod/cbase-petscii-viewer), then:
 
 **Extensions panel:** `···` → Install from VSIX
 
 **Command line:**
 ```bash
-code --install-extension cbase-petscii-viewer-0.3.1-beta.vsix
+code --install-extension cbase-petscii-viewer-0.3.2-beta.vsix
 ```
 
 ---

@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.2-beta] - 2026-06-18
+
+### Added
+
+- **`$88` (F7) line break** — C\*Base uses `$88` (the F7 key code) as a soft line break in message text. The `.seq` decoder now treats it identically to `$0D`/`$8D`: flush the current row, start a new row, reset reverse. Previously stripped silently.
+- **Charset auto-detection in `.seq` files** — if `$8E` (uppercase) or `$0E` (lowercase) appears in the first 10 bytes of a `.seq` file, the viewer opens in that charset automatically. If no indicator is present, the file opens in lowercase. Persisted state no longer overrides file-level charset on open.
+- **Per-page charset in `.petmate` files** — each Petmate page carries a `charset` field (`"upper"` or `"lower"`) in the JSON. The viewer now reads that field and applies the correct charset automatically when navigating to each page. Manual toggle overrides the auto-detected value for the current page within the session.
+
+---
+
 ## [0.3.1-beta] - 2026-06-17
 
 ### Changed

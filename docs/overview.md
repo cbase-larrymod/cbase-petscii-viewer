@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.3.1-beta
+**Version:** 0.3.2-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -17,7 +17,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 
 - C64 bitmap rendering via embedded character ROM (zero anti-aliasing)
 - Full 16-color palette with seven presets: CGTerm, Colodore, PALette, Pepto (PAL), Pepto (NTSC), Petmate, VICE
-- Uppercase/graphics and lowercase charset toggle
+- Charset auto-detection — `.seq` files open in the file-encoded charset; `.petmate` pages switch per page automatically
 - MCI command display toggle (£-commands and @:-commands)
 - CLS ($93) break indicator — fluorescent green dotted line (`.seq` only)
 - VS Code theme-aware background (dark and light mode)
@@ -41,7 +41,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 
 | Control                               | Description                                                |
 | ------------------------------------- | ---------------------------------------------------------- |
-| Lowercase charset / Uppercase charset | Toggle between the two C64 character sets                  |
+| Lowercase charset / Uppercase charset | Toggle charset; auto-detected from file on open            |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
 | Show CLS ($93)                        | Show a green dotted line at Clear Screen boundaries        |
 | Palette selector                      | Switch between seven palette presets                       |
@@ -57,7 +57,7 @@ Drag the right edge of the canvas to change column width (20–200).
 | ------------------------------------- | ---------------------------------------------------------- |
 | ‹ / ›                                 | Navigate to previous / next page                           |
 | Page X/N                              | Current page and total page count                          |
-| Lowercase charset / Uppercase charset | Toggle between the two C64 character sets                  |
+| Lowercase charset / Uppercase charset | Toggle charset; auto-detected from page JSON on navigation |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
 | Palette selector                      | Switch between seven palette presets                       |
 | Color swatches                        | Click a swatch to override the page background color       |
@@ -91,5 +91,5 @@ Source code, issues, and releases:
 
 ---
 
-**Last updated:** 2026-06-17
+**Last updated:** 2026-06-18
 **License:** See [LICENSE.md](../LICENSE.md)

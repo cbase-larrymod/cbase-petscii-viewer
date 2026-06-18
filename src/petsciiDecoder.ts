@@ -33,7 +33,7 @@ const STRIP = new Set<number>([
     0x03,           // RUN/STOP
     0x0A,           // LF (unused in PETSCII)
     0x08, 0x09,     // Disable/enable C=-Shift
-    0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, // F1–F8
+    0x85, 0x86, 0x87, 0x89, 0x8A, 0x8B, 0x8C, // F1–F6, F8 ($88/F7 is C*Base line break)
     0x0E,           // Switch to lowercase charset (whole-file mode)
     0x0F,           // Unused
     0x11, 0x91,     // Cursor down/up
@@ -73,8 +73,9 @@ export function decode(data: Uint8Array, lowercase: boolean, cols: number = 40):
     }
 
     for (const byte of data) {
-        if (byte === 0x0D || byte === 0x8D) {
+        if (byte === 0x0D || byte === 0x8D || byte === 0x88) {
             // $8D (Shift+Return) is used as the sole row terminator in many SEQ files.
+            // $88 (F7) is used by C*Base as a soft line break in message text.
             // Skip push when CR immediately follows an auto-wrap to avoid a
             // spurious blank row; still push for intentional blank lines.
             if (row.length > 0 || !lastWasAutoWrap) {

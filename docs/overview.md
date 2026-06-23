@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.3.2-beta
+**Version:** 0.4.0-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -16,7 +16,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 ## Features
 
 - C64 bitmap rendering via embedded character ROM (zero anti-aliasing)
-- Full 16-color palette with seven presets: CGTerm, Colodore, PALette, Pepto (PAL), Pepto (NTSC), Petmate, VICE
+- Full 16-color palette with six presets: CGTerm, Colodore, PALette, Pepto, Petmate, VICE
 - Charset auto-detection — `.seq` files open in the file-encoded charset; `.petmate` pages switch per page automatically
 - MCI command display toggle (£-commands and @:-commands)
 - CLS ($93) break indicator — fluorescent green dotted line (`.seq` only)

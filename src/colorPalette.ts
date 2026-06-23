@@ -2,14 +2,14 @@ export interface C64Color {
     hex: string;
 }
 
-export type PaletteName = 'cgterm' | 'colodore' | 'palette' | 'peptopal' | 'peptontsc' | 'petmate' | 'vice';
+export type PaletteName = 'cgterm' | 'colodore' | 'palette' | 'pepto' | 'petmate' | 'vice';
 
 function pal(hexes: string[]): C64Color[] {
     return hexes.map(hex => ({ hex }));
 }
 
 export const PALETTES: Record<PaletteName, C64Color[]> = {
-    // Source: github.com/unbreached/CGTerm-3.0/src/gfx.c — identical to Pepto (PAL)
+    // Source: github.com/unbreached/CGTerm-3.0/src/gfx.c — identical to Pepto
     cgterm: pal([
         '#000000', '#ffffff', '#68372b', '#70a4b2',
         '#6f3d86', '#588d43', '#352879', '#b8c76f',
@@ -31,18 +31,11 @@ export const PALETTES: Record<PaletteName, C64Color[]> = {
         '#6b6b6b', '#8fc271', '#675db6', '#8f8f8f',
     ]),
     // Source: github.com/VICE-Team/svn-mirror//vice/data/C64/pepto-pal.vpl
-    peptopal: pal([
+    pepto: pal([
         '#000000', '#ffffff', '#68372b', '#70a4b2',
         '#6f3d86', '#588d43', '#352879', '#b8c76f',
         '#6f4f25', '#433900', '#9a6759', '#444444',
         '#6c6c6c', '#9ad284', '#6c5eb5', '#959595',
-    ]),
-    // Source: github.com/VICE-Team/svn-mirror//vice/data/C64/pepto-ntsc.vpl
-    peptontsc: pal([
-        '#000000', '#ffffff', '#67372b', '#70a3b1',
-        '#6f3d86', '#588c42', '#342879', '#b7c66e',
-        '#6f4e25', '#423800', '#996659', '#434343',
-        '#6b6b6b', '#9ad183', '#6b5eb5', '#959595',
     ]),
     // Source: github.com/wbochar/petmate9/src/utils/palette.ts — default 'petmate' palette
     petmate: pal([
@@ -60,15 +53,14 @@ export const PALETTES: Record<PaletteName, C64Color[]> = {
     ]),
 };
 
-export const PALETTE_NAMES: PaletteName[] = ['cgterm', 'colodore', 'palette', 'peptopal', 'peptontsc', 'petmate', 'vice'];
+export const PALETTE_NAMES: PaletteName[] = ['cgterm', 'colodore', 'palette', 'pepto', 'petmate', 'vice'];
 
 export const PALETTE_LABELS: Record<PaletteName, string> = {
     cgterm:    'CGTerm',
     colodore:  'Colodore',
     palette:   'PALette',
     petmate:   'Petmate',
-    peptopal:  'Pepto (PAL)',
-    peptontsc: 'Pepto (NTSC)',
+    pepto:     'Pepto',
     vice:      'VICE',
 };
 

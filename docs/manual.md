@@ -83,7 +83,7 @@ C\*Base PETSCII Viewer renders Commodore 64 BBS sequence files in Visual Studio 
 - Visual Studio Code v1.105.0 or later
 
 **Optional (for building from source):**
-- Node.js v18.0 or later
+- Node.js v24.0 or later
 - TypeScript compiler (`npm install -g typescript`)
 - vsce (`npm install -g @vscode/vsce`)
 

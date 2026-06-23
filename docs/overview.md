@@ -44,7 +44,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 | Lowercase charset / Uppercase charset | Toggle charset; auto-detected from file on open            |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
 | Show CLS ($93)                        | Show a green dotted line at Clear Screen boundaries        |
-| Palette selector                      | Switch between seven palette presets                       |
+| Palette selector                      | Switch between six palette presets                       |
 | Color swatches                        | Click a swatch to change the C64 background color          |
 | ↺                                     | Reset column width to 40 (appears only when width ≠ 40)    |
 | W×N                                   | Dimensions; click W to type a custom column count          |
@@ -59,7 +59,7 @@ Drag the right edge of the canvas to change column width (20–200).
 | Page X/N                              | Current page and total page count                          |
 | Lowercase charset / Uppercase charset | Toggle charset; auto-detected from page JSON on navigation |
 | MCI Commands                          | Show or hide inline MCI command tokens                     |
-| Palette selector                      | Switch between seven palette presets                       |
+| Palette selector                      | Switch between six palette presets                       |
 | Color swatches                        | Click a swatch to override the page background color       |
 | W×H                                   | Canvas dimensions                                          |
 
@@ -91,5 +91,5 @@ Source code, issues, and releases:
 
 ---
 
-**Last updated:** 2026-06-18
+**Last updated:** 2026-06-23
 **License:** See [LICENSE.md](../LICENSE.md)

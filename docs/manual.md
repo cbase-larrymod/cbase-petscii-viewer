@@ -63,7 +63,7 @@ C\*Base PETSCII Viewer renders Commodore 64 BBS sequence files in Visual Studio 
 
 **Features:**
 - C64 bitmap rendering via embedded character ROM
-- Full 16-color C64 palette, seven palette presets
+- Full 16-color C64 palette, six palette presets
 - Uppercase/graphics and lowercase charset toggle
 - MCI command display toggle
 - CLS ($93) break indicator (`.seq` only)
@@ -83,7 +83,7 @@ C\*Base PETSCII Viewer renders Commodore 64 BBS sequence files in Visual Studio 
 - Visual Studio Code v1.105.0 or later
 
 **Optional (for building from source):**
-- Node.js v16.0 or later
+- Node.js v18.0 or later
 - TypeScript compiler (`npm install -g typescript`)
 - vsce (`npm install -g @vscode/vsce`)
 
@@ -251,7 +251,7 @@ Shows or hides MCI command tokens. Detection is based on screen-code equivalents
 
 ### Palette Selector
 
-Same ten palettes as the `.seq` viewer.
+Same six palettes as the `.seq` viewer.
 
 ### Background Color Swatches
 
@@ -320,8 +320,7 @@ Charset is **not** persisted — each page applies its own charset from the JSON
 cbase-petscii-viewer/
 ├── docs/
 │   ├── manual.md                   # This file
-│   ├── overview.md                 # Quick summary
-│   └── plans/                      # Design specifications
+│   └── overview.md                 # Quick summary
 ├── media/
 │   ├── viewer.js                   # .seq webview renderer (canvas + ImageData)
 │   └── petmateViewer.js            # .petmate webview renderer
@@ -350,11 +349,9 @@ Cross-check rendering against VICE emulator output for ground truth.
 #### Building
 
 ```bash
-npx tsc                         # compile TypeScript → out/
+npm run compile                 # compile TypeScript → out/
 npm run package                 # compile + create dist/cbase-petscii-viewer-0.4.0-beta.vsix
 ```
-
-Always run `npx tsc` (not `npx tsc --noEmit`) before packaging. The `--noEmit` flag skips output file generation.
 
 ---
 

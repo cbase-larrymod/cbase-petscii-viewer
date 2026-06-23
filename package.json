@@ -14,23 +14,45 @@
         "url": "https://github.com/cbase-larrymod/cbase-petscii-viewer/issues"
     },
     "homepage": "https://github.com/cbase-larrymod/cbase-petscii-viewer#readme",
-    "keywords": ["petscii", "c64", "commodore 64", "bbs", "seq", "c*base"],
-    "engines": { "vscode": "^1.105.0" },
-    "categories": ["Other"],
-    "activationEvents": ["onCustomEditor:cbase.seqViewer", "onCustomEditor:cbase.petmateViewer"],
+    "keywords": [
+        "petscii",
+        "c64",
+        "commodore 64",
+        "bbs",
+        "seq",
+        "c*base"
+    ],
+    "engines": {
+        "vscode": "^1.105.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCustomEditor:cbase.seqViewer",
+        "onCustomEditor:cbase.petmateViewer"
+    ],
     "main": "./out/extension",
     "contributes": {
         "customEditors": [
             {
                 "viewType": "cbase.seqViewer",
                 "displayName": "PETSCII Viewer",
-                "selector": [{ "filenamePattern": "*.seq" }],
+                "selector": [
+                    {
+                        "filenamePattern": "*.seq"
+                    }
+                ],
                 "priority": "default"
             },
             {
                 "viewType": "cbase.petmateViewer",
                 "displayName": "PETSCII Viewer (Petmate)",
-                "selector": [{ "filenamePattern": "*.petmate" }],
+                "selector": [
+                    {
+                        "filenamePattern": "*.petmate"
+                    }
+                ],
                 "priority": "default"
             }
         ],
@@ -52,6 +74,7 @@
     },
     "devDependencies": {
         "@types/vscode": "^1.80.0",
+        "@vscode/vsce": "^3.9.2",
         "typescript": "^5.0.0"
     }
 }

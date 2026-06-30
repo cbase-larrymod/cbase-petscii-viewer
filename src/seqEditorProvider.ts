@@ -40,8 +40,8 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
     ): Promise<void> {
         webviewPanel.webview.options = { enableScripts: true };
 
-        const stateKey = 'seqViewer:settings';
-        const state: ViewerState = this.context.workspaceState.get<ViewerState>(stateKey)
+        const stateKey = 'cbase-petscii-viewer.seqViewer';
+        const state: ViewerState = this.context.globalState.get<ViewerState>(stateKey)
             ?? { lowercase: true, bgIndex: DEFAULT_BG_INDEX, paletteName: DEFAULT_PALETTE, showMci: true, showCls: false };
 
         if (!(state.paletteName in PALETTES)) {
@@ -75,7 +75,7 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
                 case 'toggleCharset':
                     state.lowercase = !state.lowercase;
                     decoded = decodeContent(data, state.lowercase, viewCols); // charset affects PUA codepoints
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     webviewPanel.webview.postMessage({
                         type: 'render',
                         chars: buildChars(decoded, state.showMci).chars,
@@ -88,7 +88,7 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
                 case 'toggleMci':
                     state.showMci = !state.showMci;
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     webviewPanel.webview.postMessage({
                         type: 'render',
                         chars: buildChars(decoded, state.showMci).chars, // reuse cached rows, no re-decode
@@ -101,18 +101,18 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 
                 case 'toggleCls':
                     state.showCls = !state.showCls;
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     webviewPanel.webview.postMessage({ type: 'clsToggle', showCls: state.showCls });
                     break;
 
                 case 'setBgColor':
                     state.bgIndex = msg.index as number;
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     break;
 
                 case 'setPalette':
                     state.paletteName = msg.name as PaletteName;
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     palette = PALETTES[state.paletteName];
                     webviewPanel.webview.postMessage({
                         type: 'paletteChange',
@@ -231,6 +231,16 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   display: none;
 }
 #reset-cols-btn:hover { color: #ccc; }
+#reset-bg-btn {
+  font-size: 14px;
+  background: none;
+  color: #666;
+  border: none;
+  cursor: pointer;
+  padding: 0 0 0 2px;
+  line-height: 1;
+}
+#reset-bg-btn:hover { color: #ccc; }
 #content-wrap {
   flex: 1;
   overflow-y: auto;
@@ -288,6 +298,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   <button id="cls-btn"${state.showCls ? '' : ' class="cls-hidden"'}>Show CLS ($93)</button>
   <select id="palette-select">${paletteOptions}</select>
   <div id="swatches"></div>
+  <button id="reset-bg-btn" title="Reset background to black">&#x21BA;</button>
   <div id="dimensions-group">
     <button id="reset-cols-btn" title="Reset to 40 columns">&#x21BA;</button>
     <span id="dimensions">${cols}\xD7${rowCount}</span>

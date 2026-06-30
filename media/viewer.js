@@ -203,6 +203,13 @@
         vscode.postMessage({ type: 'setPalette', name: e.target.value });
     });
 
+    document.getElementById('reset-bg-btn').addEventListener('click', () => {
+        currentBgIndex = 0;
+        buildSwatches(currentPalette, currentBgIndex);
+        rerender();
+        vscode.postMessage({ type: 'setBgColor', index: 0 });
+    });
+
     // Drag-to-resize handle — drags the right edge of the canvas to change column count.
     // Each character cell is 16px wide on screen (2x scale), so column delta = round(ΔX / 16).
     let dragStartX = 0;

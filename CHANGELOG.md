@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.0-beta] - 2026-06-30
+
+### Added
+
+- **`cbase.decodeSeq` command API** — exposes SEQ decoding to other VS Code extensions without opening an editor tab. Accepts raw `.seq` bytes and an optional charset override; returns decoded character cell rows. Used by the C\*Base Disk Viewer to render SEQ files inline within the disk browser.
+- **Reset background ↺ button** — always-visible icon next to the color swatches in the `.seq` viewer toolbar. Resets the background color to Black (index 0).
+
+### Changed
+
+- **Settings persist globally across all workspaces** — both the `.seq` and `.petmate` viewers now store their settings in VS Code `globalState` instead of `workspaceState`. Settings no longer reset when switching workspaces. State keys updated to `cbase-petscii-viewer.seqViewer` and `cbase-petscii-viewer.petmateViewer`.
+
+---
+
 ## [0.4.0-beta] - 2026-06-23
 
 ### Added

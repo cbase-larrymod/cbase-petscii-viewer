@@ -214,6 +214,8 @@ Click any swatch to set that color as the C64 background. The active swatch is h
 
 The default background is Black (color index 0). The default foreground is Light Blue (color index 14), matching the C\*Base BBS terminal default.
 
+**↺ Reset background button:** The ↺ icon to the right of the swatches resets the background color to Black (index 0).
+
 ### Column Width Controls
 
 The right side of the toolbar shows the canvas dimensions (e.g., `40×120`).
@@ -290,7 +292,7 @@ Special case: byte $FF → screen code 94
 
 ### Settings Persistence
 
-Settings are stored in VS Code workspace state. `.seq` and `.petmate` viewers maintain separate setting keys. Settings apply globally within the workspace — there is no per-file setting.
+Settings are stored in VS Code global state (`globalState`) and persist across all workspaces and sessions. `.seq` and `.petmate` viewers maintain separate state keys (`cbase-petscii-viewer.seqViewer` and `cbase-petscii-viewer.petmateViewer`). There is no per-file setting.
 
 **`.seq` persisted settings:**
 
@@ -352,6 +354,59 @@ Cross-check rendering against VICE emulator output for ground truth.
 npm run compile                 # compile TypeScript → out/
 npm run package                 # compile + create dist/cbase-petscii-viewer-0.4.0-beta.vsix
 ```
+
+---
+
+## Disk Viewer Integration
+
+C\*Base PETSCII Viewer exposes a VS Code command API that the [C\*Base Disk Viewer](https://github.com/cbase-larrymod/cbase-disk-viewer) uses to render SEQ files inline within the disk browser. When a user opens a SEQ file inside a `.d64` disk image, the disk viewer calls `cbase.decodeSeq` with the raw file bytes. The PETSCII viewer decodes the bytes and returns rendered character cell data; no editor tab is opened.
+
+### `cbase.decodeSeq` command
+
+**Command ID:** `cbase.decodeSeq`
+
+**Input:**
+
+```typescript
+{
+    data: number[];        // raw .seq file bytes
+    lowercase?: boolean;   // charset override: true = lowercase, false = uppercase
+                           // omit to auto-detect from $0E/$8E in first 10 bytes
+}
+```
+
+**Output:**
+
+```typescript
+{
+    chars: Array<Array<{
+        cp: number;   // PUA codepoint: high byte = charset (0xE0xx/0xE1xx), low byte = PETSCII
+        r: boolean;   // reverse video
+        f: number;    // foreground palette index (0–15)
+    }>>;
+    lowercase: boolean;   // charset used (reflects auto-detection result)
+}
+```
+
+**Usage from TypeScript:**
+
+```typescript
+const result = await vscode.commands.executeCommand<{
+    chars: Array<Array<{ cp: number; r: boolean; f: number }>>;
+    lowercase: boolean;
+}>('cbase.decodeSeq', { data: Array.from(fileData) });
+```
+
+To override the charset (for example after the user toggles it in the disk viewer):
+
+```typescript
+const result = await vscode.commands.executeCommand<{
+    chars: Array<Array<{ cp: number; r: boolean; f: number }>>;
+    lowercase: boolean;
+}>('cbase.decodeSeq', { data: Array.from(fileData), lowercase: false });
+```
+
+The command is registered on the `onCommand:cbase.decodeSeq` activation event. Both extensions must be installed; if `cbase-petscii-viewer` is not active, the command will not be available and `executeCommand` returns `undefined`.
 
 ---
 
@@ -461,6 +516,6 @@ Both `$0D` and `$8D` are handled identically. A file may use either or mix both.
 
 ---
 
-**Last updated:** 2026-06-23
-**Version:** 0.4.0-beta
+**Last updated:** 2026-06-30
+**Version:** 0.5.0-beta
 **License:** See [LICENSE.md](../LICENSE.md)

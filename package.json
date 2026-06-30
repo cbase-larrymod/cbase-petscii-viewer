@@ -2,7 +2,7 @@
     "name": "cbase-petscii-viewer",
     "displayName": "C*Base PETSCII Viewer",
     "description": "C64 PETSCII .seq and .petmate file viewer for C*Base BBS files",
-    "version": "0.4.0-beta",
+    "version": "0.5.0-beta",
     "publisher": "cbase-larrymod",
     "icon": "media/icon.png",
     "license": "GPL-2.0-or-later",
@@ -30,7 +30,8 @@
     ],
     "activationEvents": [
         "onCustomEditor:cbase.seqViewer",
-        "onCustomEditor:cbase.petmateViewer"
+        "onCustomEditor:cbase.petmateViewer",
+        "onCommand:cbase.decodeSeq"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -64,6 +65,10 @@
             {
                 "command": "cbase.openPetmateFile",
                 "title": "C*Base: Open .petmate File..."
+            },
+            {
+                "command": "cbase.decodeSeq",
+                "title": "C*Base: Decode SEQ bytes (API for other extensions)"
             }
         ]
     },

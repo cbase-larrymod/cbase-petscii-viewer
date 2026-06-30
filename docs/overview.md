@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.4.0-beta
+**Version:** 0.5.0-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -21,7 +21,7 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 - MCI command display toggle (£-commands and @:-commands)
 - CLS ($93) break indicator — fluorescent green dotted line (`.seq` only)
 - VS Code theme-aware background (dark and light mode)
-- Global settings persistence across all files
+- Global settings persistence across all files and workspaces
 - `.petmate` multi-page viewer with page navigation
 - Drag-to-resize column width for `.seq` files (20–200 columns)
 - "C\*Base: Open .seq File..." and "C\*Base: Open .petmate File..." Command Palette entries
@@ -46,7 +46,8 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 | Show CLS ($93)                        | Show a green dotted line at Clear Screen boundaries        |
 | Palette selector                      | Switch between six palette presets                       |
 | Color swatches                        | Click a swatch to change the C64 background color          |
-| ↺                                     | Reset column width to 40 (appears only when width ≠ 40)    |
+| ↺ (after swatches)                    | Reset background color to Black                            |
+| ↺ (before dimensions)                 | Reset column width to 40 (appears only when width ≠ 40)    |
 | W×N                                   | Dimensions; click W to type a custom column count          |
 
 Drag the right edge of the canvas to change column width (20–200).
@@ -84,6 +85,12 @@ See [README.md](../README.md) for detailed instructions.
 
 ---
 
+## Disk Viewer Integration
+
+C\*Base PETSCII Viewer exposes a `cbase.decodeSeq` command used by the C\*Base Disk Viewer to render SEQ files inline within the disk browser. See [Manual](manual.md) for the full API reference.
+
+---
+
 ## GitHub repository
 
 Source code, issues, and releases:
@@ -91,5 +98,5 @@ Source code, issues, and releases:
 
 ---
 
-**Last updated:** 2026-06-23
+**Last updated:** 2026-06-30
 **License:** See [LICENSE.md](../LICENSE.md)

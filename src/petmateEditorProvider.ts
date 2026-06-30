@@ -30,8 +30,8 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
     ): Promise<void> {
         webviewPanel.webview.options = { enableScripts: true };
 
-        const stateKey = 'petmateViewer:settings';
-        const state: ViewerState = this.context.workspaceState.get<ViewerState>(stateKey)
+        const stateKey = 'cbase-petscii-viewer.petmateViewer';
+        const state: ViewerState = this.context.globalState.get<ViewerState>(stateKey)
             ?? { paletteName: DEFAULT_PALETTE, showMci: true };
 
         if (!(state.paletteName in PALETTES)) {
@@ -58,7 +58,7 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
             switch (msg.type) {
                 case 'setPalette':
                     state.paletteName = msg.name as PaletteName;
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     palette = PALETTES[state.paletteName];
                     webviewPanel.webview.postMessage({
                         type: 'paletteChange',
@@ -68,7 +68,7 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
 
                 case 'toggleMci':
                     state.showMci = !state.showMci;
-                    await this.context.workspaceState.update(stateKey, { ...state });
+                    await this.context.globalState.update(stateKey, { ...state });
                     // Same as toggleCharset: the webview handles this locally; we only persist.
                     break;
             }

@@ -14,10 +14,11 @@ Part of the **C\*Base Larry Mod v3.1** development package.
 - MCI command display toggle (`£`-commands and `@:`-commands)
 - CLS (`$93`) break indicator
 - VS Code theme-aware background
-- Settings persist globally across all files
+- Settings persist globally across all files and workspaces
 - `.petmate` multi-page viewer with page navigation
 - Drag-to-resize column width for `.seq` files (20–200 columns)
 - "C\*Base: Open .seq File..." Command Palette entry
+- `cbase.decodeSeq` command API — lets other extensions decode `.seq` bytes without opening an editor tab
 
 ---
 
@@ -45,6 +46,16 @@ Download `cbase-petscii-viewer-0.4.0-beta.vsix` from the [repository](https://gi
 ```bash
 code --install-extension cbase-petscii-viewer-0.4.0-beta.vsix
 ```
+
+---
+
+## Disk Viewer Integration
+
+C\*Base PETSCII Viewer exposes a `cbase.decodeSeq` command that the [C\*Base Disk Viewer](https://github.com/cbase-larrymod/cbase-disk-viewer) uses to render SEQ files inline within the disk browser.
+
+When a SEQ file inside a `.d64` disk image is opened, the disk viewer calls `cbase.decodeSeq` with the raw file bytes. The PETSCII viewer decodes the bytes and returns rendered character cell data; the disk viewer displays it in its own panel without opening a separate editor tab.
+
+See `docs/manual.md` for the full API reference.
 
 ---
 

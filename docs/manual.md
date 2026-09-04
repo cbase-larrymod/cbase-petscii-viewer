@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.4.0-beta
+**Version:** 0.6.0-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -100,13 +100,13 @@ cd cbase-petscii-viewer
 1. Open Extensions panel (`Ctrl+Shift+X` or `Cmd+Shift+X`)
 2. Click the `⋯` menu (top-right of the panel)
 3. Select **Install from VSIX**
-4. Navigate to `cbase-petscii-viewer-0.4.0-beta.vsix`
+4. Navigate to `cbase-petscii-viewer-0.6.0-beta.vsix`
 5. Click **Install**
 
 **Install via command line:**
 
 ```bash
-code --install-extension cbase-petscii-viewer-0.4.0-beta.vsix
+code --install-extension cbase-petscii-viewer-0.6.0-beta.vsix
 ```
 
 #### Method 2: Build and install from source
@@ -118,7 +118,7 @@ npm install
 npm run package
 ```
 
-The package command creates `dist/cbase-petscii-viewer-0.4.0-beta.vsix`. Install using Method 1.
+The package command creates `dist/cbase-petscii-viewer-0.6.0-beta.vsix`. Install using Method 1.
 
 #### Method 3: Development installation
 
@@ -382,7 +382,7 @@ Cross-check rendering against VICE emulator output for ground truth.
 
 ```bash
 npm run compile                 # compile TypeScript → out/
-npm run package                 # compile + create dist/cbase-petscii-viewer-0.4.0-beta.vsix
+npm run package                 # compile + create dist/cbase-petscii-viewer-0.6.0-beta.vsix
 ```
 
 ---
@@ -536,5 +536,5 @@ Both `$0D` and `$8D` are handled identically. A file may use either or mix both.
 ---
 
 **Last updated:** 2026-06-30
-**Version:** 0.5.0-beta
+**Version:** 0.6.0-beta
 **License:** See [LICENSE.md](../LICENSE.md)

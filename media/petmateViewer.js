@@ -53,10 +53,10 @@
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const charsetBtn = document.getElementById('charset-btn');
-    const mciBtn = document.getElementById('mci-btn');
+
     const pageIndicator = document.getElementById('page-indicator');
     const dimensions = document.getElementById('dimensions');
-    const paletteSelect = document.getElementById('palette-select');
+
     const swatchContainer = document.getElementById('swatches');
 
     let currentPalette = config.palette;
@@ -97,7 +97,7 @@
         currentLowercase = charsetOverride[pageIndex] !== undefined
             ? charsetOverride[pageIndex]
             : page.lowercase;
-        charsetBtn.textContent = currentLowercase ? 'Lowercase charset' : 'Uppercase charset';
+        charsetBtn.textContent = currentLowercase ? 'Lowercase' : 'Uppercase';
 
         const W = page.width * 8;
         const H = page.height * 8;
@@ -157,6 +157,14 @@
         ctx.putImageData(imgData, 0, 0);
     }
 
+    // Restores the page's *own* background rather than resetting to black, which is what the
+    // .seq editor's ↺ does: a .petmate page carries a background of its own, and the swatches
+    // only override it for the session. Black is a colour a page might legitimately store.
+    document.getElementById('reset-bg-btn').addEventListener('click', () => {
+        delete bgOverride[pageIndex];
+        renderPage();
+    });
+
     prevBtn.addEventListener('click', () => {
         if (pageIndex > 0) { pageIndex--; renderPage(); }
     });
@@ -168,21 +176,125 @@
         charsetOverride[pageIndex] = currentLowercase; // remember manual override for this page
         renderPage();
     });
-    mciBtn.addEventListener('click', () => {
-        showMci = !showMci;
-        mciBtn.className = showMci ? '' : 'mci-hidden';
-        renderPage();
-        // Same as toggleCharset: host persists state only, no render response needed.
-        vscode.postMessage({ type: 'toggleMci' });
+    // ---- the View and palette dropdowns -------------------------------------------------
+    // The same menus as the .seq editor's and Disk Commander's, built the same way. MCI was a
+    // flat toolbar button that dimmed when off, which said nothing about what turned it on.
+    //
+    // Show CLS is listed here too and always dimmed: a .petmate file has no $93 boundaries to
+    // mark. Both toggles appear in both editors so the menu's shape does not change between
+    // them; `viewApplies` from the extension says which is live. See src/viewKeys.ts.
+    const VIEW_KEY_LABELS = config.viewKeys || {};
+    const VIEW_APPLIES = config.viewApplies || {};
+    const PALETTES = config.palettes || [];
+    const PALETTE_KEYS = config.paletteKeys || [];
+    let currentPaletteName = config.paletteName;
+
+    const VIEW_ITEMS = [
+        { id: 'mci', label: 'MCI Commands', get: () => showMci, toggle: () => {
+            showMci = !showMci;
+            renderPage();
+            // Same as toggleCharset: host persists state only, no render response needed.
+            vscode.postMessage({ type: 'toggleMci' });
+        } },
+        { id: 'cls', label: 'Show CLS ($93)', get: () => false, toggle: () => {} },
+    ];
+
+    const el = (id) => document.getElementById(id);
+    const hideViewMenu = () => { el('view-menu').hidden = true; };
+    const hidePaletteMenu = () => { el('palette-menu').hidden = true; };
+
+    /** One themed menu row: check gutter, label, and the shortcut on the right. */
+    function menuRow(label, checked, shortcut, onPick, disabled) {
+        const row = document.createElement('div');
+        row.className = 'item' + (checked ? '' : ' off') + (disabled ? ' disabled' : '');
+        const tick = document.createElement('span');
+        tick.className = 'codicon codicon-check';
+        row.appendChild(tick);
+        row.appendChild(document.createTextNode(label));
+        if (shortcut) {
+            const hint = document.createElement('span');
+            hint.className = 'shortcut';
+            hint.textContent = shortcut;
+            row.appendChild(hint);
+        }
+        if (!disabled) { row.addEventListener('click', onPick); }
+        return row;
+    }
+
+    /** Drop a built menu below its button. */
+    function openMenu(menu, btn) {
+        const r = el(btn).getBoundingClientRect();
+        menu.hidden = false;
+        menu.style.left = r.left + 'px';
+        menu.style.top = (r.bottom + 2) + 'px';
+    }
+
+    function applyViewItem(item) {
+        item.toggle();
+        hideViewMenu();
+    }
+
+    function showViewMenu() {
+        const menu = el('view-menu');
+        menu.innerHTML = '';
+        for (const item of VIEW_ITEMS) {
+            menu.appendChild(menuRow(item.label, item.get(), VIEW_KEY_LABELS[item.id],
+                () => applyViewItem(item), VIEW_APPLIES[item.id] === false));
+        }
+        openMenu(menu, 'view-btn');
+    }
+
+    /** Select a palette by position. Out of range does nothing. */
+    function applyPaletteIndex(index) {
+        if (index < 0 || index >= PALETTES.length) { return; }
+        vscode.postMessage({ type: 'setPalette', name: PALETTES[index].name });
+        hidePaletteMenu();
+    }
+
+    function showPaletteMenu() {
+        const menu = el('palette-menu');
+        menu.innerHTML = '';
+        PALETTES.forEach((p, i) => {
+            menu.appendChild(menuRow(p.label, p.name === currentPaletteName, PALETTE_KEYS[i],
+                () => applyPaletteIndex(i)));
+        });
+        openMenu(menu, 'palette-btn');
+    }
+
+    el('view-btn').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        hidePaletteMenu();
+        if (el('view-menu').hidden) { showViewMenu(); } else { hideViewMenu(); }
     });
-    paletteSelect.addEventListener('change', (e) => {
-        vscode.postMessage({ type: 'setPalette', name: e.target.value });
+    el('palette-btn').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        hideViewMenu();
+        if (el('palette-menu').hidden) { showPaletteMenu(); } else { hidePaletteMenu(); }
     });
+    // Anywhere else dismisses both. mousedown rather than click, so a menu is gone before
+    // whatever was clicked acts on the same press.
+    document.addEventListener('mousedown', (ev) => {
+        for (const id of ['view-menu', 'palette-menu']) {
+            const menu = el(id);
+            if (!menu.hidden && !menu.contains(ev.target)) { menu.hidden = true; }
+        }
+    }, true);
+
+    /** A View shortcut, arriving as a command from the extension rather than as a keydown. */
+    function applyViewToggleById(id) {
+        // `applies` as well as existence: the key has to do what the greyed row does, nothing.
+        if (VIEW_APPLIES[id] === false) { return; }
+        const item = VIEW_ITEMS.find(i => i.id === id);
+        if (item) { applyViewItem(item); }
+    }
 
     window.addEventListener('message', (event) => {
         const msg = event.data;
+        if (msg.type === 'viewToggle') { applyViewToggleById(msg.id); }
+        if (msg.type === 'setPaletteIndex') { applyPaletteIndex(msg.index); }
         if (msg.type === 'paletteChange') {
             currentPalette = msg.palette;
+            if (msg.paletteName) { currentPaletteName = msg.paletteName; }
             renderPage();
         }
     });

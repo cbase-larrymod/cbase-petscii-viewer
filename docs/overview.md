@@ -2,7 +2,7 @@
 
 Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` files.
 
-**Version:** 0.5.0-beta
+**Version:** 0.6.0-beta
 **Part of:** C\*Base Larry Mod v3.1
 
 ---
@@ -39,18 +39,21 @@ Renders C64 BBS sequence files directly in VS Code. Uses the embedded C64 charac
 
 ### .seq viewer
 
-| Control                               | Description                                                |
-| ------------------------------------- | ---------------------------------------------------------- |
-| Lowercase charset / Uppercase charset | Toggle charset; auto-detected from file on open            |
-| MCI Commands                          | Show or hide inline MCI command tokens                     |
-| Show CLS ($93)                        | Show a green dotted line at Clear Screen boundaries        |
-| Palette selector                      | Switch between six palette presets                       |
-| Color swatches                        | Click a swatch to change the C64 background color          |
-| ↺ (after swatches)                    | Reset background color to Black                            |
-| ↺ (before dimensions)                 | Reset column width to 40 (appears only when width ≠ 40)    |
-| W×N                                   | Dimensions; click W to type a custom column count          |
+Deliberately the same toolbar as [C\*Base Disk Commander](https://github.com/cbase-larrymod/cbase-disk-commander)'s: the two extensions show the same SEQ file with the same toggles above it.
+
+| Control               | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| Lowercase / Uppercase | Toggle charset; auto-detected from file on open                                      |
+| View                  | Checkmark menu: **MCI Commands** (`Alt+Shift+M`) and **Show CLS ($93)** (`Alt+Shift+L`) |
+| Palette               | Checkmark menu of the six presets, current one ticked; `Alt+1`–`Alt+6` select directly |
+| Color swatches        | Click a swatch to change the C64 background color                                    |
+| ↺ (after swatches)    | Reset background color to Black                                                      |
+| ↺ (before dimensions) | Reset column width to 40 (appears only when width ≠ 40)                              |
+| W×N                   | Dimensions; click W to type a custom column count                                    |
 
 Drag the right edge of the canvas to change column width (20–200).
+
+Alt+Shift rather than plain Alt because VS Code's menu bar claims `Alt+F` `E` `S` `V` `G` `R` `T` `H` before any keybinding is considered. Both are contributed commands and can be rebound from **Keyboard Shortcuts**.
 
 ### .petmate viewer
 
@@ -58,9 +61,9 @@ Drag the right edge of the canvas to change column width (20–200).
 | ------------------------------------- | ---------------------------------------------------------- |
 | ‹ / ›                                 | Navigate to previous / next page                           |
 | Page X/N                              | Current page and total page count                          |
-| Lowercase charset / Uppercase charset | Toggle charset; auto-detected from page JSON on navigation |
-| MCI Commands                          | Show or hide inline MCI command tokens                     |
-| Palette selector                      | Switch between six palette presets                       |
+| Lowercase / Uppercase | Toggle charset; auto-detected from page JSON on navigation |
+| View                  | Checkmark menu: **MCI Commands** (`Alt+Shift+M`). **Show CLS ($93)** is listed but dimmed — a `.petmate` file has no `$93` boundaries |
+| Palette               | Checkmark menu of the six presets; `Alt+1`–`Alt+6` select directly |
 | Color swatches                        | Click a swatch to override the page background color       |
 | W×H                                   | Canvas dimensions                                          |
 
@@ -85,9 +88,30 @@ See [README.md](../README.md) for detailed instructions.
 
 ---
 
-## Disk Viewer Integration
+## Disk Commander Integration
 
-C\*Base PETSCII Viewer exposes a `cbase.decodeSeq` command used by the C\*Base Disk Viewer to render SEQ files inline within the disk browser. See [Manual](manual.md) for the full API reference.
+The [C\*Base Disk Commander](https://github.com/cbase-larrymod/cbase-disk-commander) extension
+opens disk images and renders SEQ entries inline. It no longer calls this extension to do it —
+it decodes SEQ itself, so opening a SEQ from a disk image works whether or not this extension is
+installed.
+
+`.petmate` is [Petmate](https://github.com/wbochar/petmate9)'s own screen format, not a
+Commodore file type — it never appears on a C64 disk image. Only this extension opens one, and
+Disk Commander has no reason to. That split is deliberate rather than a gap.
+
+The two share the decoder rather than each having its own. `src/petsciiDecoder.ts` and
+`src/petsciiMaps.ts` are byte-identical copies of the same files in both repositories, and a
+test in each fails if they stop being identical. Which byte is a colour, which is stripped and
+where a row breaks are decisions about the format; two extensions that disagreed about them
+would render one file two different ways. Fix a decoding bug in either repository and copy the
+file across — the test says so if you forget.
+
+The `cbase.decodeSeq` command has been **removed**. It existed solely so Disk Commander could
+render SEQ entries; now that Disk Commander decodes SEQ itself, nothing called it, and no other
+extension ever used it.
+
+The `.seq` toolbar is deliberately Disk Commander's, down to the shortcut letters — see
+[Toolbar controls](#toolbar-controls).
 
 ---
 

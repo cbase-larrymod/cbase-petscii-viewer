@@ -1,6 +1,29 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.0-beta] - 2026-09-04
+
+### Added
+
+- **Keyboard shortcuts for the view toggles**, in both editors, shown against each item in the menu: `Alt+Shift+M` for MCI Commands and `Alt+Shift+L` for Show CLS ($93). Both toggles are listed in both editors so the menu's shape does not change between them; Show CLS is dimmed in `.petmate`, which has no `$93` boundaries, and a dimmed row ignores its shortcut too. `Alt+1` to `Alt+6` pick a colour palette. They match C\*Base Disk Commander's, which shows the same toggles over the same files. All are contributed commands, so they can be rebound from **Keyboard Shortcuts**.
+- **A test suite.** `npm test` runs a plain-node runner with no new dependencies, and `npm run package` runs it first. It guards the keymap: no shortcut may take a letter VS Code's menu bar claims, `package.json` must bind what the table says, nothing may be bound without a `when` clause, both dropdowns must be styled by the same CSS rules, and the shared toggle letters are compared against Disk Commander's own table whenever both repositories are checked out side by side.
+- **`docs/SMOKE.md`** — the manual pass for what no test here can reach, starting with what a shortcut does when VS Code's menu bar wants the same chord.
+
+### Fixed
+
+- **The `.petmate` viewer had no way to undo a background change.** Its colour swatches override the page's own background for the session, but there was no reset — the `.seq` viewer has had one all along. The new ↺ restores the page's *own* stored colour rather than resetting to black, since black is a colour a page may legitimately store.
+
+### Removed
+
+- **The `cbase.decodeSeq` command.** It existed solely so Disk Commander could render SEQ entries inline; Disk Commander decodes SEQ itself now, nothing called it, and no other extension ever used it. Its `onCommand:cbase.decodeSeq` activation event is gone with it, as is a second copy of `detectCharset` that existed only to serve it.
+
+### Changed
+
+- **Both toolbars match C\*Base Disk Commander's** — the `.petmate` editor as well as the `.seq` one. MCI Commands and Show CLS ($93) are now items in a **View** dropdown with check marks rather than flat buttons that dimmed when off; the palette picker is the same dropdown rather than a list box; and the charset button reads **Lowercase** / **Uppercase** rather than "Lowercase charset". The two extensions show the same SEQ file with the same toggles above it, so the toolbars should not look like two different controls. VS Code's icon font is now bundled, which is what makes the menus' check marks and chevrons the same glyphs as the other extension's.
+- **Disk Commander no longer calls `cbase.decodeSeq`.** It decodes SEQ itself, so opening a SEQ entry from a disk image works whether or not this extension is installed. The two share the decoder by keeping `src/petsciiDecoder.ts` and `src/petsciiMaps.ts` byte-identical, with a test in each repository that fails if they stop being. The command is still registered and still behaves as documented; nothing calls it now.
+
+---
+
 ## [0.5.0-beta] - 2026-06-30
 
 ### Added

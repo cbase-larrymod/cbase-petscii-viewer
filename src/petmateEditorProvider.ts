@@ -4,6 +4,8 @@ import {
     C64Color, PaletteName, PALETTES, PALETTE_NAMES, PALETTE_LABELS, DEFAULT_PALETTE,
 } from './colorPalette';
 import { getNonce } from './utils';
+import { viewKeyLabels, paletteKeyLabels, viewAppliesMap } from './viewKeys';
+import { trackViewFocus } from './viewFocus';
 
 interface ViewerState {
     paletteName: PaletteName;
@@ -29,6 +31,9 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
         _token: vscode.CancellationToken
     ): Promise<void> {
         webviewPanel.webview.options = { enableScripts: true };
+
+        // Which view the View-menu shortcuts act on, and whether they are bound at all.
+        trackViewFocus(webviewPanel);
 
         const stateKey = 'cbase-petscii-viewer.petmateViewer';
         const state: ViewerState = this.context.globalState.get<ViewerState>(stateKey)
@@ -63,6 +68,9 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
                     webviewPanel.webview.postMessage({
                         type: 'paletteChange',
                         palette: palette.map(c => c.hex),
+                        // Which palette, not just its hexes: the picker used to be a <select>
+                        // that held its own selection, and the menu's check mark must be told.
+                        paletteName: state.paletteName,
                     });
                     break;
 
@@ -83,7 +91,8 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">
-<style>body { background: #1a1a1a; color: #f55; font-family: monospace; padding: 2em; }</style>
+<style>
+body { background: #1a1a1a; color: #f55; font-family: monospace; padding: 2em; }</style>
 </head>
 <body>Failed to parse .petmate file: ${escapeHtml(message)}</body>
 </html>`;
@@ -102,16 +111,26 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
         const scriptUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, 'media', 'petmateViewer.js')
         );
+        // VS Code's own icon font, so the menus' check marks and chevrons are the same glyphs
+        // as the .seq editor's and Disk Commander's. @vscode/codicons 0.0.46-24.
+        const codiconUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'media', 'codicon.ttf')
+        );
 
-        const paletteOptions = PALETTE_NAMES
-            .map(n => `<option value="${n}"${n === state.paletteName ? ' selected' : ''}>${PALETTE_LABELS[n as PaletteName]}</option>`)
-            .join('');
+        const paletteItems = PALETTE_NAMES.map(n => ({ name: n, label: PALETTE_LABELS[n as PaletteName] }));
 
         const config = JSON.stringify({
             palette: palette.map(c => c.hex),
             paletteName: state.paletteName,
             showMci: state.showMci,
             pages,
+            // The menus draw these; viewKeys.ts decides them, so the page keeps no second copy
+            // that could disagree with what package.json binds. `viewApplies` marks CLS inert:
+            // a .petmate file has no $93 boundaries to mark.
+            viewKeys: viewKeyLabels(),
+            viewApplies: viewAppliesMap('petmate'),
+            palettes: paletteItems,
+            paletteKeys: paletteKeyLabels(),
         });
 
         return `<!DOCTYPE html>
@@ -119,8 +138,21 @@ export class PetmateEditorProvider implements vscode.CustomReadonlyEditorProvide
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy"
-  content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};">
 <style>
+@font-face {
+  font-family: "codicon";
+  src: url("${codiconUri}") format("truetype");
+}
+.codicon {
+  font: normal normal normal 16px/1 "codicon";
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+.codicon-chevron-down::before { content: "\\eab4"; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body { display: flex; flex-direction: column; background: #1a1a1a; }
@@ -133,7 +165,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   gap: 10px;
   border-bottom: 1px solid #333;
 }
-#prev-btn, #next-btn, #charset-btn, #mci-btn, #palette-select {
+#prev-btn, #next-btn, #charset-btn, #view-btn, #palette-btn {
   font-family: monospace;
   font-size: 12px;
   background: #333;
@@ -142,12 +174,61 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   cursor: pointer;
   border-radius: 3px;
 }
-#prev-btn, #next-btn, #charset-btn, #mci-btn { padding: 2px 8px; }
-#palette-select { padding: 2px 4px; }
-#prev-btn:hover, #next-btn:hover, #charset-btn:hover, #mci-btn:hover, #palette-select:hover { background: #444; }
+#prev-btn, #next-btn, #charset-btn, #view-btn, #palette-btn { padding: 2px 8px; }
+#prev-btn:hover, #next-btn:hover, #charset-btn:hover, #view-btn:hover, #palette-btn:hover { background: #444; }
 #prev-btn:disabled, #next-btn:disabled { color: #555; border-color: #444; cursor: default; }
 #prev-btn:disabled:hover, #next-btn:disabled:hover { background: #333; }
-#mci-btn.mci-hidden { color: #888; border-color: #444; }
+/* Both dropdown buttons, or the one left out renders its chevron at the base .codicon 16px,
+   off the vertical centre and with no gap — which makes its box taller than the other's. */
+#view-btn .codicon, #palette-btn .codicon { font-size: 13px; vertical-align: middle; margin-left: 2px; }
+
+/* The View and palette dropdowns, rule for rule as in the .seq editor and Disk Commander. */
+#view-menu, #palette-menu {
+  position: absolute;
+  z-index: 10;
+  min-width: 160px;
+  padding: 4px 0;
+  background: var(--vscode-menu-background, #252526);
+  color: var(--vscode-menu-foreground, #ccc);
+  border: 1px solid var(--vscode-menu-border, #454545);
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  font-family: var(--vscode-font-family, sans-serif);
+  font-size: 13px;
+}
+#view-menu[hidden], #palette-menu[hidden] { display: none; }
+#view-menu .item, #palette-menu .item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#view-menu .item:hover, #palette-menu .item:hover {
+  background: var(--vscode-menu-selectionBackground, #04395e);
+  color: var(--vscode-menu-selectionForeground, #fff);
+}
+#view-menu .item.disabled, #palette-menu .item.disabled { opacity: 0.4; cursor: default; }
+#view-menu .item.disabled:hover, #palette-menu .item.disabled:hover { background: none; color: var(--vscode-menu-foreground, #ccc); }
+#view-menu .item .codicon, #palette-menu .item .codicon { font-size: 14px; width: 16px; flex-shrink: 0; }
+#view-menu .item.off .codicon, #palette-menu .item.off .codicon { visibility: hidden; }
+#view-menu .item .shortcut, #palette-menu .item .shortcut {
+  margin-left: auto;
+  padding-left: 20px;
+  opacity: 0.7;
+}
+#view-menu .item:hover .shortcut, #palette-menu .item:hover .shortcut { opacity: 0.9; }
+#reset-bg-btn {
+  font-size: 14px;
+  background: transparent;
+  color: #888;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+#reset-bg-btn:hover { color: #ccc; }
 #page-indicator {
   font-family: monospace;
   font-size: 12px;
@@ -187,12 +268,15 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   <button id="prev-btn">&#8249;</button>
   <span id="page-indicator"></span>
   <button id="next-btn">&#8250;</button>
-  <button id="charset-btn">Lowercase charset</button>
-  <button id="mci-btn"${state.showMci ? '' : ' class="mci-hidden"'}>MCI Commands</button>
-  <select id="palette-select">${paletteOptions}</select>
+  <button id="charset-btn">Lowercase</button>
+  <button id="view-btn" title="Show or hide MCI commands">View <span class="codicon codicon-chevron-down"></span></button>
+  <button id="palette-btn" title="C64 colour palette">Palette <span class="codicon codicon-chevron-down"></span></button>
   <div id="swatches"></div>
+  <button id="reset-bg-btn" title="Reset background to the page's own colour">&#x21BA;</button>
   <span id="dimensions"></span>
 </div>
+<div id="view-menu" hidden></div>
+<div id="palette-menu" hidden></div>
 <div id="content-wrap">
   <canvas id="content"></canvas>
 </div>

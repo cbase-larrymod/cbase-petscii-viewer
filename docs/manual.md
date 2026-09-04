@@ -287,6 +287,8 @@ The same menu as the `.seq` viewer, over the same six palettes, on `Alt+1` to `A
 
 Click any swatch to override the background color for the current page. The override applies to the current session only; the file's stored background color is not changed.
 
+The **↺** beside the swatches clears the override and restores the page's own stored colour. It does not reset to black, as the `.seq` viewer's does — a `.petmate` page carries a background of its own, and black may be exactly what it stores.
+
 ---
 
 ## Advanced Topics

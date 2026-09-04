@@ -88,6 +88,10 @@ The part no test here can reach.
 - [ ] **Show CLS ($93)** is listed but **dimmed** — a `.petmate` file has no `$93` boundaries.
       Clicking it does nothing, and `Alt+Shift+L` does nothing.
 - [ ] `Alt+Shift+M` toggles MCI, and `Alt+1`…`Alt+6` switch palette, exactly as in `.seq`.
+- [ ] Click a background swatch, then **↺** — the page returns to its *own* stored background,
+      not to black. On a page whose stored background *is* black, that is still the right result.
+- [ ] Navigate to another page and back: the override is per page, so page 2's colour is
+      unaffected by an override set on page 1.
 
 ---
 

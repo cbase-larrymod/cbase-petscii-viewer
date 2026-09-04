@@ -219,6 +219,16 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   opacity: 0.7;
 }
 #view-menu .item:hover .shortcut, #palette-menu .item:hover .shortcut { opacity: 0.9; }
+#reset-bg-btn {
+  font-size: 14px;
+  background: transparent;
+  color: #888;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+#reset-bg-btn:hover { color: #ccc; }
 #page-indicator {
   font-family: monospace;
   font-size: 12px;
@@ -262,6 +272,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   <button id="view-btn" title="Show or hide MCI commands">View <span class="codicon codicon-chevron-down"></span></button>
   <button id="palette-btn" title="C64 colour palette">Palette <span class="codicon codicon-chevron-down"></span></button>
   <div id="swatches"></div>
+  <button id="reset-bg-btn" title="Reset background to the page's own colour">&#x21BA;</button>
   <span id="dimensions"></span>
 </div>
 <div id="view-menu" hidden></div>

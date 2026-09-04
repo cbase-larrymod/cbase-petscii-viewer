@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - **A test suite.** `npm test` runs a plain-node runner with no new dependencies, and `npm run package` runs it first. It guards the keymap: no shortcut may take a letter VS Code's menu bar claims, `package.json` must bind what the table says, nothing may be bound without a `when` clause, both dropdowns must be styled by the same CSS rules, and the shared toggle letters are compared against Disk Commander's own table whenever both repositories are checked out side by side.
 - **`docs/SMOKE.md`** — the manual pass for what no test here can reach, starting with what a shortcut does when VS Code's menu bar wants the same chord.
 
+### Fixed
+
+- **The `.petmate` viewer had no way to undo a background change.** Its colour swatches override the page's own background for the session, but there was no reset — the `.seq` viewer has had one all along. The new ↺ restores the page's *own* stored colour rather than resetting to black, since black is a colour a page may legitimately store.
+
 ### Removed
 
 - **The `cbase.decodeSeq` command.** It existed solely so Disk Commander could render SEQ entries inline; Disk Commander decodes SEQ itself now, nothing called it, and no other extension ever used it. Its `onCommand:cbase.decodeSeq` activation event is gone with it, as is a second copy of `detectCharset` that existed only to serve it.

@@ -127,6 +127,19 @@ test('both editors use menus, not toolbar buttons', () => {
     }
 });
 
+test('both editors can reset the background they let you change', () => {
+    // The .petmate editor had swatches but no way back: its ↺ was missing entirely while the
+    // .seq one had had one all along. They mean slightly different things — .seq resets to
+    // black, .petmate restores the page's own stored colour, which black may legitimately be —
+    // so this checks each has the button, not that they behave identically.
+    for (const [name, src] of Object.entries(PROVIDERS)) {
+        assert.ok(src.includes('id="reset-bg-btn"'), `the ${name} toolbar has no background reset`);
+    }
+    const petmate = fs.readFileSync(path.join(ROOT, 'media', 'petmateViewer.js'), 'utf8');
+    assert.ok(/delete bgOverride\[pageIndex\]/.test(petmate),
+        "the .petmate reset no longer restores the page's own background");
+});
+
 test('CLS is inert in .petmate and live in .seq', () => {
     // A .petmate file has no $93 boundaries to mark. Both toggles are listed in both editors so
     // the menu's shape does not change between them; this is what says which one is live.

@@ -157,6 +157,14 @@
         ctx.putImageData(imgData, 0, 0);
     }
 
+    // Restores the page's *own* background rather than resetting to black, which is what the
+    // .seq editor's ↺ does: a .petmate page carries a background of its own, and the swatches
+    // only override it for the session. Black is a colour a page might legitimately store.
+    document.getElementById('reset-bg-btn').addEventListener('click', () => {
+        delete bgOverride[pageIndex];
+        renderPage();
+    });
+
     prevBtn.addEventListener('click', () => {
         if (pageIndex > 0) { pageIndex--; renderPage(); }
     });

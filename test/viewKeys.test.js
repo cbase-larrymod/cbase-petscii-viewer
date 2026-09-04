@@ -99,22 +99,74 @@ test('the shortcuts are kept out of the command palette', () => {
 
 // ── the toolbar matches Disk Commander's ────────────────────────
 
-const PROVIDER = fs.readFileSync(path.join(ROOT, 'src', 'seqEditorProvider.ts'), 'utf8');
+const PROVIDERS = {
+    seq: fs.readFileSync(path.join(ROOT, 'src', 'seqEditorProvider.ts'), 'utf8'),
+    petmate: fs.readFileSync(path.join(ROOT, 'src', 'petmateEditorProvider.ts'), 'utf8'),
+};
+const PROVIDER = PROVIDERS.seq;
 
-test('the charset button is labelled Lowercase / Uppercase', () => {
+test('the charset button is labelled Lowercase / Uppercase, in both editors', () => {
     // It read "Lowercase charset" / "Uppercase charset"; Disk Commander's says just the word.
-    assert.ok(!PROVIDER.includes('Lowercase charset'), 'the charset button still says "charset"');
-    assert.ok(!fs.readFileSync(path.join(ROOT, 'media', 'viewer.js'), 'utf8').includes('Lowercase charset'),
-        'the page still relabels it back to "Lowercase charset" on render');
+    for (const [name, src] of Object.entries(PROVIDERS)) {
+        assert.ok(!src.includes('Lowercase charset'), `the ${name} charset button still says "charset"`);
+    }
+    for (const page of ['viewer.js', 'petmateViewer.js']) {
+        assert.ok(!fs.readFileSync(path.join(ROOT, 'media', page), 'utf8').includes('Lowercase charset'),
+            `${page} still relabels it back to "Lowercase charset" on render`);
+    }
 });
 
-test('MCI and CLS are menu items, not toolbar buttons', () => {
-    for (const gone of ['mci-btn', 'cls-btn', 'palette-select']) {
-        assert.ok(!PROVIDER.includes(gone), `#${gone} is back in the toolbar`);
+test('both editors use menus, not toolbar buttons', () => {
+    for (const [name, src] of Object.entries(PROVIDERS)) {
+        for (const gone of ['mci-btn', 'cls-btn', 'palette-select']) {
+            assert.ok(!src.includes(gone), `#${gone} is back in the ${name} toolbar`);
+        }
+        for (const wanted of ['id="view-btn"', 'id="palette-btn"', 'id="view-menu"', 'id="palette-menu"']) {
+            assert.ok(src.includes(wanted), `the ${name} toolbar has no ${wanted}`);
+        }
     }
-    for (const wanted of ['id="view-btn"', 'id="palette-btn"', 'id="view-menu"', 'id="palette-menu"']) {
-        assert.ok(PROVIDER.includes(wanted), `the toolbar has no ${wanted}`);
+});
+
+test('CLS is inert in .petmate and live in .seq', () => {
+    // A .petmate file has no $93 boundaries to mark. Both toggles are listed in both editors so
+    // the menu's shape does not change between them; this is what says which one is live.
+    assert.strictEqual(VK.viewToggleApplies('cls', 'seq'), true);
+    assert.strictEqual(VK.viewToggleApplies('cls', 'petmate'), false);
+    assert.strictEqual(VK.viewToggleApplies('mci', 'seq'), true);
+    assert.strictEqual(VK.viewToggleApplies('mci', 'petmate'), true);
+    // Every toggle gets an answer, so a new one cannot be silently absent from the map.
+    for (const editor of ['seq', 'petmate']) {
+        const map = VK.viewAppliesMap(editor);
+        for (const { id } of VK.VIEW_KEYS) {
+            assert.strictEqual(typeof map[id], 'boolean', `${id} has no answer for ${editor}`);
+        }
     }
+});
+
+test('both pages dim what does not apply, and refuse its shortcut', () => {
+    for (const page of ['viewer.js', 'petmateViewer.js']) {
+        const js = fs.readFileSync(path.join(ROOT, 'media', page), 'utf8');
+        assert.ok(js.includes('config.viewApplies'), `${page} never asks which toggles apply`);
+        assert.ok(/VIEW_APPLIES\[item\.id\] === false/.test(js), `${page} does not dim inert rows`);
+        assert.ok(/if \(VIEW_APPLIES\[id\] === false\) \{ return; \}/.test(js),
+            `${page}'s shortcut path does not check whether the toggle applies`);
+    }
+    for (const [name, src] of Object.entries(PROVIDERS)) {
+        assert.ok(src.includes("viewAppliesMap('"), `the ${name} page is never sent the answers`);
+    }
+});
+
+test('the decodeSeq command is gone', () => {
+    // It existed only for Disk Commander, which decodes SEQ itself now. Nothing else used it.
+    assert.ok(!pkg.contributes.commands.some(c => c.command === 'cbase.decodeSeq'),
+        'cbase.decodeSeq is contributed again');
+    assert.ok(!(pkg.activationEvents || []).includes('onCommand:cbase.decodeSeq'),
+        'the extension still activates on a command it does not register');
+    const ext = fs.readFileSync(path.join(ROOT, 'src', 'extension.ts'), 'utf8');
+    assert.ok(!ext.includes('decodeSeq'), 'extension.ts still registers or defines decodeSeq');
+    // Its removal also took a second copy of detectCharset with it; one is left.
+    assert.ok(!ext.includes('detectCharset'),
+        'extension.ts has a copy of detectCharset again — seqEditorProvider.ts is the only one');
 });
 
 /**
@@ -124,8 +176,10 @@ test('MCI and CLS are menu items, not toolbar buttons', () => {
  * for "#a, #b" throughout — silently yields "#a .item, #b .item:hover", which applies a hover
  * style to #a unconditionally. A substring check would pass that.
  */
-function assertStyledAlike(a, b, minimum) {
-    const css = PROVIDER.slice(PROVIDER.indexOf('<style>'), PROVIDER.indexOf('</style>'))
+function assertStyledAlike(a, b, minimum, which = 'seq') {
+    const src = PROVIDERS[which];
+    // The last <style> is the viewer page's; an earlier one belongs to the error page.
+    const css = src.slice(src.lastIndexOf('<style>'), src.lastIndexOf('</style>'))
         .replace(/\/\*[\s\S]*?\*\//g, '');
     const rules = [...css.matchAll(/([^{}]+)\{[^{}]*\}/g)].map(m => m[1].trim());
     let checked = 0;
@@ -134,16 +188,19 @@ function assertStyledAlike(a, b, minimum) {
         for (const part of parts) {
             if (!part.includes(a)) { continue; }
             const twin = part.replace(a, b);
-            assert.ok(parts.includes(twin), `"${part}" has no matching "${twin}" — ${b} would not get this rule`);
+            assert.ok(parts.includes(twin),
+                `${which}: "${part}" has no matching "${twin}" — ${b} would not get this rule`);
             checked++;
         }
     }
-    assert.ok(checked >= minimum, `only ${checked} ${a} selectors found; the CSS regex has rotted`);
+    assert.ok(checked >= minimum, `${which}: only ${checked} ${a} selectors found; the CSS regex has rotted`);
 }
 
 test('the two dropdowns, and their buttons, are styled by the same rules', () => {
-    assertStyledAlike('#view-menu', '#palette-menu', 6);
-    assertStyledAlike('#view-btn', '#palette-btn', 3);
+    for (const name of Object.keys(PROVIDERS)) {
+        assertStyledAlike('#view-menu', '#palette-menu', 6, name);
+        assertStyledAlike('#view-btn', '#palette-btn', 3, name);
+    }
 });
 
 // ── and agrees with Disk Commander ──────────────────────────────

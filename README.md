@@ -18,7 +18,6 @@ Part of the **C\*Base Larry Mod v3.1** development package.
 - `.petmate` multi-page viewer with page navigation
 - Drag-to-resize column width for `.seq` files (20–200 columns)
 - "C\*Base: Open .seq File..." Command Palette entry
-- `cbase.decodeSeq` command API — lets other extensions decode `.seq` bytes without opening an editor tab
 
 ---
 
@@ -58,6 +57,10 @@ opens disk images and renders SEQ entries inline. It no longer calls this extens
 it decodes SEQ itself, so opening a SEQ from a disk image works whether or not this extension is
 installed.
 
+`.petmate` is [Petmate](https://github.com/wbochar/petmate9)'s own screen format, not a
+Commodore file type — it never appears on a C64 disk image. Only this extension opens one, and
+Disk Commander has no reason to. That split is deliberate rather than a gap.
+
 The two share the decoder rather than each having its own. `src/petsciiDecoder.ts` and
 `src/petsciiMaps.ts` are byte-identical copies of the same files in both repositories, and a
 test in each fails if they stop being identical. Which byte is a colour, which is stripped and
@@ -65,9 +68,9 @@ where a row breaks are decisions about the format; two extensions that disagreed
 would render one file two different ways. Fix a decoding bug in either repository and copy the
 file across — the test says so if you forget.
 
-The `cbase.decodeSeq` command is still registered, and still accepts
-`{ data: number[], lowercase?: boolean }`, returning `{ chars, lowercase }`. Nothing in either
-extension calls it now.
+The `cbase.decodeSeq` command has been **removed**. It existed solely so Disk Commander could
+render SEQ entries; now that Disk Commander decodes SEQ itself, nothing called it, and no other
+extension ever used it.
 
 The `.seq` toolbar is deliberately Disk Commander's, down to the shortcut letters — see
 [Toolbar controls](docs/overview.md#toolbar-controls).

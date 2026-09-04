@@ -30,8 +30,7 @@
     ],
     "activationEvents": [
         "onCustomEditor:cbase.seqViewer",
-        "onCustomEditor:cbase.petmateViewer",
-        "onCommand:cbase.decodeSeq"
+        "onCustomEditor:cbase.petmateViewer"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -65,10 +64,6 @@
             {
                 "command": "cbase.openPetmateFile",
                 "title": "C*Base: Open .petmate File..."
-            },
-            {
-                "command": "cbase.decodeSeq",
-                "title": "C*Base: Decode SEQ bytes (API for other extensions)"
             },
             {
                 "command": "cbase-petscii-viewer.view.mci",

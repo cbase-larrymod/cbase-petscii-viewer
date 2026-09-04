@@ -57,15 +57,13 @@ Alt+Shift rather than plain Alt because VS Code's menu bar claims `Alt+F` `E` `S
 
 ### .petmate viewer
 
-Still the older flat toolbar — only the `.seq` editor has been aligned, so the two differ. No keyboard shortcuts here yet.
-
 | Control                               | Description                                                |
 | ------------------------------------- | ---------------------------------------------------------- |
 | ‹ / ›                                 | Navigate to previous / next page                           |
 | Page X/N                              | Current page and total page count                          |
-| Lowercase charset / Uppercase charset | Toggle charset; auto-detected from page JSON on navigation |
-| MCI Commands                          | Show or hide inline MCI command tokens                     |
-| Palette selector                      | Switch between six palette presets                       |
+| Lowercase / Uppercase | Toggle charset; auto-detected from page JSON on navigation |
+| View                  | Checkmark menu: **MCI Commands** (`Alt+Shift+M`). **Show CLS ($93)** is listed but dimmed — a `.petmate` file has no `$93` boundaries |
+| Palette               | Checkmark menu of the six presets; `Alt+1`–`Alt+6` select directly |
 | Color swatches                        | Click a swatch to override the page background color       |
 | W×H                                   | Canvas dimensions                                          |
 
@@ -97,6 +95,10 @@ opens disk images and renders SEQ entries inline. It no longer calls this extens
 it decodes SEQ itself, so opening a SEQ from a disk image works whether or not this extension is
 installed.
 
+`.petmate` is [Petmate](https://github.com/wbochar/petmate9)'s own screen format, not a
+Commodore file type — it never appears on a C64 disk image. Only this extension opens one, and
+Disk Commander has no reason to. That split is deliberate rather than a gap.
+
 The two share the decoder rather than each having its own. `src/petsciiDecoder.ts` and
 `src/petsciiMaps.ts` are byte-identical copies of the same files in both repositories, and a
 test in each fails if they stop being identical. Which byte is a colour, which is stripped and
@@ -104,9 +106,9 @@ where a row breaks are decisions about the format; two extensions that disagreed
 would render one file two different ways. Fix a decoding bug in either repository and copy the
 file across — the test says so if you forget.
 
-The `cbase.decodeSeq` command is still registered, and still accepts
-`{ data: number[], lowercase?: boolean }`, returning `{ chars, lowercase }`. Nothing in either
-extension calls it now.
+The `cbase.decodeSeq` command has been **removed**. It existed solely so Disk Commander could
+render SEQ entries; now that Disk Commander decodes SEQ itself, nothing called it, and no other
+extension ever used it.
 
 The `.seq` toolbar is deliberately Disk Commander's, down to the shortcut letters — see
 [Toolbar controls](#toolbar-controls).

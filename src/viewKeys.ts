@@ -47,6 +47,29 @@ export const VIEW_KEYS: ViewKey[] = [
  */
 export const MENUBAR_MNEMONICS = ['f', 'e', 's', 'v', 'g', 'r', 't', 'h'];
 
+/**
+ * Whether a toggle does anything in a given editor.
+ *
+ * Both editors list both toggles, so the View menu's shape does not change between them, but a
+ * `.petmate` file has no `$93` boundaries to mark — CLS is inert there. An inert row is drawn
+ * dimmed, takes no click, and ignores its shortcut, exactly as in Disk Commander, where the
+ * same rule keeps the menu from offering toggles that do nothing.
+ *
+ * @param id      The toggle's id.
+ * @param editor  Which editor is asking.
+ */
+export function viewToggleApplies(id: string, editor: 'seq' | 'petmate'): boolean {
+    if (id === 'cls') { return editor === 'seq'; }
+    return true;
+}
+
+/** id -> whether it applies, for one editor. Sent into that editor's page. */
+export function viewAppliesMap(editor: 'seq' | 'petmate'): Record<string, boolean> {
+    const out: Record<string, boolean> = {};
+    for (const k of VIEW_KEYS) { out[k.id] = viewToggleApplies(k.id, editor); }
+    return out;
+}
+
 /** How many palettes Alt+digit reaches. The picker lists six; see colorPalette.ts. */
 export const PALETTE_KEY_COUNT = 6;
 

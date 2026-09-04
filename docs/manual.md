@@ -31,8 +31,8 @@ Visual Studio Code extension for Commodore 64 PETSCII `.seq` and `.petmate` file
   - [Toolbar Reference — .petmate Viewer](#toolbar-reference--petmate-viewer)
     - [Page Navigation](#page-navigation)
     - [Charset Toggle](#charset-toggle-1)
-    - [MCI Commands](#mci-commands-1)
-    - [Palette Selector](#palette-selector)
+    - [View Menu](#view-menu-1)
+    - [Palette Menu](#palette-menu-1)
     - [Background Color Swatches](#background-color-swatches-1)
   - [Advanced Topics](#advanced-topics)
     - [How Rendering Works](#how-rendering-works)
@@ -250,11 +250,6 @@ The right side of the toolbar shows the canvas dimensions (e.g., `40×120`).
 
 ## Toolbar Reference — .petmate Viewer
 
-> The `.petmate` editor still carries the older flat toolbar — a `Lowercase charset` /
-> `Uppercase charset` button, an `MCI Commands` button that dims when off, and a plain palette
-> list box. Only the `.seq` editor was aligned with Disk Commander's, so the two editors in this
-> extension currently differ. There are no keyboard shortcuts here yet.
-
 ### Page Navigation
 
 **Buttons:** `‹` (previous) / `›` (next)  
@@ -264,21 +259,29 @@ Navigate between pages in the `.petmate` file. Buttons are disabled when already
 
 ### Charset Toggle
 
-**Button:** `Lowercase charset` / `Uppercase charset`
+**Button:** `Lowercase` / `Uppercase`
 
 Switches the active glyph bank (equivalent to pressing Shift+C= on a C64). The file stores screen codes which are charset-independent; toggling selects which ROM bank to render them from.
 
 This overrides the charset stored in the file and applies to the current session only — it is not saved per-page.
 
-### MCI Commands
+### View Menu
 
-**Button:** `MCI Commands` (dimmed when hidden)
+**Button:** `View`
+
+The same dropdown as the `.seq` viewer's, with the same shortcuts.
+
+#### MCI Commands
+
+**In:** the **View** menu → **MCI Commands** (`Alt+Shift+M`)
 
 Shows or hides MCI command tokens. Detection is based on screen-code equivalents and is charset-independent.
 
-### Palette Selector
+**Show CLS ($93)** is listed in the same menu but always **dimmed** here: a `.petmate` file has no `$93` boundaries to mark. It takes no click and ignores its shortcut. Both toggles appear in both editors so the menu's shape does not change between them.
 
-Same six palettes as the `.seq` viewer.
+### Palette Menu
+
+The same menu as the `.seq` viewer, over the same six palettes, on `Alt+1` to `Alt+6`.
 
 ### Background Color Swatches
 
@@ -389,6 +392,10 @@ images and renders SEQ entries inline. It used to call `cbase.decodeSeq` to do t
 this extension installed a SEQ entry simply did not open. It decodes SEQ itself now, and this
 extension is no longer required for it.
 
+`.petmate` is [Petmate](https://github.com/wbochar/petmate9)'s own screen format, not a
+Commodore file type — it never appears on a C64 disk image. Only this extension opens one, and
+Disk Commander has no reason to. That split is deliberate rather than a gap.
+
 ### The decoder is shared by copy
 
 `src/petsciiDecoder.ts` and `src/petsciiMaps.ts` are **byte-identical** in the two
@@ -411,56 +418,12 @@ and files start opening in different charsets in the two extensions.
 MCI stripping and the CLS toggles are **not** shared: both are Disk Commander's own, and this
 extension has no MCI or CLS handling beyond rendering what the decoder returns.
 
-### `cbase.decodeSeq` command
+The `cbase.decodeSeq` command has been **removed**. It existed solely so Disk Commander could
+render SEQ entries; now that Disk Commander decodes SEQ itself, nothing called it, and no other
+extension ever used it.
 
-Still registered, and still behaves as documented below. Nothing in either extension calls it
-now; it is kept because it is a published API surface and removing it would break anything else
-that adopted it.
-
-**Command ID:** `cbase.decodeSeq`
-
-**Input:**
-
-```typescript
-{
-    data: number[];        // raw .seq file bytes
-    lowercase?: boolean;   // charset override: true = lowercase, false = uppercase
-                           // omit to auto-detect from $0E/$8E in first 10 bytes
-}
-```
-
-**Output:**
-
-```typescript
-{
-    chars: Array<Array<{
-        cp: number;   // PUA codepoint: high byte = charset (0xE0xx/0xE1xx), low byte = PETSCII
-        r: boolean;   // reverse video
-        f: number;    // foreground palette index (0–15)
-    }>>;
-    lowercase: boolean;   // charset used (reflects auto-detection result)
-}
-```
-
-**Usage from TypeScript:**
-
-```typescript
-const result = await vscode.commands.executeCommand<{
-    chars: Array<Array<{ cp: number; r: boolean; f: number }>>;
-    lowercase: boolean;
-}>('cbase.decodeSeq', { data: Array.from(fileData) });
-```
-
-To override the charset (for example after the user toggles it in the disk viewer):
-
-```typescript
-const result = await vscode.commands.executeCommand<{
-    chars: Array<Array<{ cp: number; r: boolean; f: number }>>;
-    lowercase: boolean;
-}>('cbase.decodeSeq', { data: Array.from(fileData), lowercase: false });
-```
-
-The command is registered on the `onCommand:cbase.decodeSeq` activation event. Both extensions must be installed; if `cbase-petscii-viewer` is not active, the command will not be available and `executeCommand` returns `undefined`.
+It was registered on an `onCommand:cbase.decodeSeq` activation event, which is gone too. If you
+depended on it, say so — reinstating it is a few lines, and the decoder it called is still here.
 
 ---
 

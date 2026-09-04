@@ -202,6 +202,9 @@
     // The shortcut labels and the palette list come from the extension (viewKeys.ts), so the
     // page keeps no second copy of a keymap that could disagree with what package.json binds.
     const VIEW_KEY_LABELS = config.viewKeys || {};
+    // Which toggles do anything in this editor. Both are listed either way, so the menu's shape
+    // is the same in both editors; an inert row is dimmed, takes no click and ignores its key.
+    const VIEW_APPLIES = config.viewApplies || {};
     const PALETTES = config.palettes || [];
     const PALETTE_KEYS = config.paletteKeys || [];
 
@@ -217,9 +220,9 @@
     const hidePaletteMenu = () => { el('palette-menu').hidden = true; };
 
     /** One themed menu row: check gutter, label, and the shortcut on the right. */
-    function menuRow(label, checked, shortcut, onPick) {
+    function menuRow(label, checked, shortcut, onPick, disabled) {
         const row = document.createElement('div');
-        row.className = 'item' + (checked ? '' : ' off');
+        row.className = 'item' + (checked ? '' : ' off') + (disabled ? ' disabled' : '');
         const tick = document.createElement('span');
         tick.className = 'codicon codicon-check';
         row.appendChild(tick);
@@ -230,7 +233,7 @@
             hint.textContent = shortcut;
             row.appendChild(hint);
         }
-        row.addEventListener('click', onPick);
+        if (!disabled) { row.addEventListener('click', onPick); }
         return row;
     }
 
@@ -254,7 +257,7 @@
         menu.innerHTML = '';
         for (const item of VIEW_ITEMS) {
             menu.appendChild(menuRow(item.label, item.get(), VIEW_KEY_LABELS[item.id],
-                () => applyViewItem(item)));
+                () => applyViewItem(item), VIEW_APPLIES[item.id] === false));
         }
         openMenu(menu, 'view-btn');
     }
@@ -299,6 +302,8 @@
 
     /** A View shortcut, arriving as a command from the extension rather than as a keydown. */
     function applyViewToggleById(id) {
+        // `applies` as well as existence: the key has to do what the greyed row does, nothing.
+        if (VIEW_APPLIES[id] === false) { return; }
         const item = VIEW_ITEMS.find(i => i.id === id);
         if (item) { applyViewItem(item); }
     }

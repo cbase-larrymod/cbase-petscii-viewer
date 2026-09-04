@@ -5,26 +5,9 @@ import {
     DEFAULT_BG_INDEX, DEFAULT_PALETTE,
 } from './colorPalette';
 import { getNonce } from './utils';
-import { viewKeyLabels, paletteKeyLabels } from './viewKeys';
+import { viewKeyLabels, paletteKeyLabels, viewAppliesMap } from './viewKeys';
+import { trackViewFocus } from './viewFocus';
 
-/**
- * The `when` clause on the View menu's keybindings. True only while a SEQ view is the active
- * tab, so Alt+Shift+M is taken here and nowhere else in VS Code.
- */
-const FOCUS_CONTEXT = 'cbasePetsciiFocused';
-
-/** The focused SEQ view's panel, for a shortcut to post into. */
-let activePanel: vscode.WebviewPanel | undefined;
-
-function setFocus(panel: vscode.WebviewPanel | undefined): void {
-    activePanel = panel;
-    vscode.commands.executeCommand('setContext', FOCUS_CONTEXT, panel !== undefined);
-}
-
-/** The focused view's webview, or undefined when none has focus. See viewKeys.ts. */
-export function focusedViewerWebview(): vscode.Webview | undefined {
-    return activePanel?.webview;
-}
 
 interface ViewerState {
     lowercase: boolean;
@@ -61,14 +44,7 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
         webviewPanel.webview.options = { enableScripts: true };
 
         // Which view the View-menu shortcuts act on, and whether they are bound at all.
-        if (webviewPanel.active) { setFocus(webviewPanel); }
-        webviewPanel.onDidChangeViewState(e => {
-            if (e.webviewPanel.active) { setFocus(webviewPanel); }
-            else if (activePanel === webviewPanel) { setFocus(undefined); }
-        });
-        webviewPanel.onDidDispose(() => {
-            if (activePanel === webviewPanel) { setFocus(undefined); }
-        });
+        trackViewFocus(webviewPanel);
 
         const stateKey = 'cbase-petscii-viewer.seqViewer';
         const state: ViewerState = this.context.globalState.get<ViewerState>(stateKey)
@@ -209,6 +185,7 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
             // The menus draw these; viewKeys.ts decides them, so the page keeps no second copy
             // that could disagree with what package.json binds.
             viewKeys: viewKeyLabels(),
+            viewApplies: viewAppliesMap('seq'),
             palettes: paletteItems,
             paletteKeys: paletteKeyLabels(),
         });
@@ -291,6 +268,8 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   background: var(--vscode-menu-selectionBackground, #04395e);
   color: var(--vscode-menu-selectionForeground, #fff);
 }
+#view-menu .item.disabled, #palette-menu .item.disabled { opacity: 0.4; cursor: default; }
+#view-menu .item.disabled:hover, #palette-menu .item.disabled:hover { background: none; color: var(--vscode-menu-foreground, #ccc); }
 #view-menu .item .codicon, #palette-menu .item .codicon { font-size: 14px; width: 16px; flex-shrink: 0; }
 #view-menu .item.off .codicon, #palette-menu .item.off .codicon { visibility: hidden; }
 /* The shortcut sits hard right, pushed there by margin-left:auto so the labels stay

@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
-import { SeqEditorProvider } from './seqEditorProvider';
+import { SeqEditorProvider, focusedViewerWebview } from './seqEditorProvider';
 import { PetmateEditorProvider } from './petmateEditorProvider';
 import { decode } from './petsciiDecoder';
+import { registerViewKeyCommands } from './viewKeys';
 
 export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
@@ -19,6 +20,11 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('cbase.openPetmateFile', openPetmateFile),
         vscode.commands.registerCommand('cbase.decodeSeq', decodeSeq)
     );
+
+    // The View menu's Alt+Shift shortcuts. Contributed keybindings rather than keys handled in
+    // the page: a webview forwards every keydown to the workbench unconditionally, and
+    // preventDefault there does not stop it — see viewKeys.ts.
+    registerViewKeyCommands(context, focusedViewerWebview);
 }
 
 async function openSeqFile(): Promise<void> {

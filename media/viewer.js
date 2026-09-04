@@ -29,6 +29,8 @@
     let currentBgIndex = config.bgIndex;
     let currentClsBeforeRows = config.clsBeforeRows;
     let currentShowCls = config.showCls;
+    let currentShowMci = config.showMci !== false;
+    let currentPaletteName = config.paletteName;
     let currentCols = config.cols || 40;
     let currentRows = 0;
     let editingCols = false;
@@ -191,17 +193,115 @@
         vscode.postMessage({ type: 'toggleCharset' });
     });
 
-    document.getElementById('mci-btn').addEventListener('click', () => {
-        vscode.postMessage({ type: 'toggleMci' });
-    });
+    // ---- the View and palette dropdowns -------------------------------------------------
+    // Deliberately Disk Commander's menus, built the same way: a check-mark gutter, the label,
+    // and the shortcut hard right. MCI and CLS were two flat toolbar buttons that dimmed when
+    // off, which said nothing about what the key for them was and did not match the other
+    // extension showing the same file.
+    //
+    // The shortcut labels and the palette list come from the extension (viewKeys.ts), so the
+    // page keeps no second copy of a keymap that could disagree with what package.json binds.
+    const VIEW_KEY_LABELS = config.viewKeys || {};
+    const PALETTES = config.palettes || [];
+    const PALETTE_KEYS = config.paletteKeys || [];
 
-    document.getElementById('cls-btn').addEventListener('click', () => {
-        vscode.postMessage({ type: 'toggleCls' });
-    });
+    // `id` is what a shortcut arrives as, and what its label is looked up by. The ids shared
+    // with Disk Commander must mean the same toggle in both.
+    const VIEW_ITEMS = [
+        { id: 'mci', label: 'MCI Commands', get: () => currentShowMci, msg: 'toggleMci' },
+        { id: 'cls', label: 'Show CLS ($93)', get: () => currentShowCls, msg: 'toggleCls' },
+    ];
 
-    document.getElementById('palette-select').addEventListener('change', (e) => {
-        vscode.postMessage({ type: 'setPalette', name: e.target.value });
+    const el = (id) => document.getElementById(id);
+    const hideViewMenu = () => { el('view-menu').hidden = true; };
+    const hidePaletteMenu = () => { el('palette-menu').hidden = true; };
+
+    /** One themed menu row: check gutter, label, and the shortcut on the right. */
+    function menuRow(label, checked, shortcut, onPick) {
+        const row = document.createElement('div');
+        row.className = 'item' + (checked ? '' : ' off');
+        const tick = document.createElement('span');
+        tick.className = 'codicon codicon-check';
+        row.appendChild(tick);
+        row.appendChild(document.createTextNode(label));
+        if (shortcut) {
+            const hint = document.createElement('span');
+            hint.className = 'shortcut';
+            hint.textContent = shortcut;
+            row.appendChild(hint);
+        }
+        row.addEventListener('click', onPick);
+        return row;
+    }
+
+    /** Drop a built menu below its button. */
+    function openMenu(menu, btn) {
+        const r = el(btn).getBoundingClientRect();
+        menu.hidden = false;
+        menu.style.left = r.left + 'px';
+        menu.style.top = (r.bottom + 2) + 'px';
+    }
+
+    function applyViewItem(item) {
+        // The extension owns these toggles and echoes the result back, so the check mark is
+        // redrawn from what it says rather than from a guess made here.
+        vscode.postMessage({ type: item.msg });
+        hideViewMenu();
+    }
+
+    function showViewMenu() {
+        const menu = el('view-menu');
+        menu.innerHTML = '';
+        for (const item of VIEW_ITEMS) {
+            menu.appendChild(menuRow(item.label, item.get(), VIEW_KEY_LABELS[item.id],
+                () => applyViewItem(item)));
+        }
+        openMenu(menu, 'view-btn');
+    }
+
+    /** Select a palette by position. Out of range does nothing. */
+    function applyPaletteIndex(index) {
+        if (index < 0 || index >= PALETTES.length) { return; }
+        vscode.postMessage({ type: 'setPalette', name: PALETTES[index].name });
+        hidePaletteMenu();
+    }
+
+    function showPaletteMenu() {
+        const menu = el('palette-menu');
+        menu.innerHTML = '';
+        PALETTES.forEach((p, i) => {
+            // A palette past the last bound digit gets no label rather than one for a key
+            // nothing carries.
+            menu.appendChild(menuRow(p.label, p.name === currentPaletteName, PALETTE_KEYS[i],
+                () => applyPaletteIndex(i)));
+        });
+        openMenu(menu, 'palette-btn');
+    }
+
+    el('view-btn').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        hidePaletteMenu();
+        if (el('view-menu').hidden) { showViewMenu(); } else { hideViewMenu(); }
     });
+    el('palette-btn').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        hideViewMenu();
+        if (el('palette-menu').hidden) { showPaletteMenu(); } else { hidePaletteMenu(); }
+    });
+    // Anywhere else dismisses both. mousedown rather than click, so a menu is gone before
+    // whatever was clicked acts on the same press.
+    document.addEventListener('mousedown', (ev) => {
+        for (const id of ['view-menu', 'palette-menu']) {
+            const menu = el(id);
+            if (!menu.hidden && !menu.contains(ev.target)) { menu.hidden = true; }
+        }
+    }, true);
+
+    /** A View shortcut, arriving as a command from the extension rather than as a keydown. */
+    function applyViewToggleById(id) {
+        const item = VIEW_ITEMS.find(i => i.id === id);
+        if (item) { applyViewItem(item); }
+    }
 
     document.getElementById('reset-bg-btn').addEventListener('click', () => {
         currentBgIndex = 0;
@@ -243,21 +343,23 @@
         const msg = event.data;
         if (msg.type === 'render') {
             document.getElementById('charset-btn').textContent =
-                msg.lowercase ? 'Lowercase charset' : 'Uppercase charset';
-            document.getElementById('mci-btn').className = msg.showMci ? '' : 'mci-hidden';
+                msg.lowercase ? 'Lowercase' : 'Uppercase';
+            currentShowMci = msg.showMci !== false;
             currentChars = msg.chars;
             currentCols = msg.cols || currentCols;
             currentShowCls = msg.showCls !== false;
             rerender();
         }
+        if (msg.type === 'viewToggle') { applyViewToggleById(msg.id); }
+        if (msg.type === 'setPaletteIndex') { applyPaletteIndex(msg.index); }
         if (msg.type === 'paletteChange') {
             currentPalette = msg.palette;
+            if (msg.paletteName) { currentPaletteName = msg.paletteName; }
             buildSwatches(msg.palette, currentBgIndex);
             rerender();
         }
         if (msg.type === 'clsToggle') {
             currentShowCls = msg.showCls;
-            document.getElementById('cls-btn').className = msg.showCls ? '' : 'cls-hidden';
             rerender();
         }
     });

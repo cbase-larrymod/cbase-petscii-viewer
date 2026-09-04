@@ -5,6 +5,26 @@ import {
     DEFAULT_BG_INDEX, DEFAULT_PALETTE,
 } from './colorPalette';
 import { getNonce } from './utils';
+import { viewKeyLabels, paletteKeyLabels } from './viewKeys';
+
+/**
+ * The `when` clause on the View menu's keybindings. True only while a SEQ view is the active
+ * tab, so Alt+Shift+M is taken here and nowhere else in VS Code.
+ */
+const FOCUS_CONTEXT = 'cbasePetsciiFocused';
+
+/** The focused SEQ view's panel, for a shortcut to post into. */
+let activePanel: vscode.WebviewPanel | undefined;
+
+function setFocus(panel: vscode.WebviewPanel | undefined): void {
+    activePanel = panel;
+    vscode.commands.executeCommand('setContext', FOCUS_CONTEXT, panel !== undefined);
+}
+
+/** The focused view's webview, or undefined when none has focus. See viewKeys.ts. */
+export function focusedViewerWebview(): vscode.Webview | undefined {
+    return activePanel?.webview;
+}
 
 interface ViewerState {
     lowercase: boolean;
@@ -39,6 +59,16 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
         _token: vscode.CancellationToken
     ): Promise<void> {
         webviewPanel.webview.options = { enableScripts: true };
+
+        // Which view the View-menu shortcuts act on, and whether they are bound at all.
+        if (webviewPanel.active) { setFocus(webviewPanel); }
+        webviewPanel.onDidChangeViewState(e => {
+            if (e.webviewPanel.active) { setFocus(webviewPanel); }
+            else if (activePanel === webviewPanel) { setFocus(undefined); }
+        });
+        webviewPanel.onDidDispose(() => {
+            if (activePanel === webviewPanel) { setFocus(undefined); }
+        });
 
         const stateKey = 'cbase-petscii-viewer.seqViewer';
         const state: ViewerState = this.context.globalState.get<ViewerState>(stateKey)
@@ -118,6 +148,9 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
                         type: 'paletteChange',
                         palette: palette.map(c => c.hex),
                         bgHex: palette[state.bgIndex].hex,
+                        // Which palette, not just its hexes: the picker used to be a <select>
+                        // that held its own selection, and the menu's check mark has to be told.
+                        paletteName: state.paletteName,
                     });
                     break;
 
@@ -153,12 +186,15 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
         const scriptUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, 'media', 'viewer.js')
         );
+        // VS Code's own icon font, so the menus' check marks and chevrons are the same glyphs
+        // at the same size as Disk Commander's. @vscode/codicons 0.0.46-24.
+        const codiconUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'media', 'codicon.ttf')
+        );
         const bgHex = palette[state.bgIndex].hex;
         const { chars, clsBeforeRows, rowCount } = buildChars(decoded, state.showMci);
 
-        const paletteOptions = PALETTE_NAMES
-            .map(n => `<option value="${n}"${n === state.paletteName ? ' selected' : ''}>${PALETTE_LABELS[n as PaletteName]}</option>`)
-            .join('');
+        const paletteItems = PALETTE_NAMES.map(n => ({ name: n, label: PALETTE_LABELS[n as PaletteName] }));
 
         const config = JSON.stringify({
             palette: palette.map(c => c.hex),
@@ -170,6 +206,11 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
             cols,
             chars,
             clsBeforeRows,
+            // The menus draw these; viewKeys.ts decides them, so the page keeps no second copy
+            // that could disagree with what package.json binds.
+            viewKeys: viewKeyLabels(),
+            palettes: paletteItems,
+            paletteKeys: paletteKeyLabels(),
         });
 
         return `<!DOCTYPE html>
@@ -177,8 +218,22 @@ export class SeqEditorProvider implements vscode.CustomReadonlyEditorProvider {
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy"
-  content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};">
 <style>
+@font-face {
+  font-family: "codicon";
+  src: url("${codiconUri}") format("truetype");
+}
+.codicon {
+  font: normal normal normal 16px/1 "codicon";
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+.codicon-chevron-down::before { content: "\\eab4"; }
+.codicon-check::before { content: "\\eab2"; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body { display: flex; flex-direction: column; background: #1a1a1a; }
@@ -191,7 +246,7 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   gap: 10px;
   border-bottom: 1px solid #333;
 }
-#charset-btn, #mci-btn, #cls-btn, #palette-select {
+#charset-btn, #view-btn, #palette-btn {
   font-family: monospace;
   font-size: 12px;
   background: #333;
@@ -200,11 +255,52 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
   cursor: pointer;
   border-radius: 3px;
 }
-#charset-btn, #mci-btn, #cls-btn { padding: 2px 8px; }
-#palette-select { padding: 2px 4px; }
-#charset-btn:hover, #mci-btn:hover, #cls-btn:hover, #palette-select:hover { background: #444; }
-#mci-btn.mci-hidden { color: #888; border-color: #444; }
-#cls-btn.cls-hidden { color: #888; border-color: #444; }
+#charset-btn, #view-btn, #palette-btn { padding: 2px 8px; }
+#charset-btn:hover, #view-btn:hover, #palette-btn:hover { background: #444; }
+/* Both dropdown buttons, or the one left out renders its chevron at the base .codicon 16px,
+   off the vertical centre and with no gap — which makes its box taller than the other's. */
+#view-btn .codicon, #palette-btn .codicon { font-size: 13px; vertical-align: middle; margin-left: 2px; }
+
+/* The View and palette dropdowns. Deliberately Disk Commander's, rule for rule: the same
+   toggles above the same file should not look like two different controls in the two
+   extensions. Both menus are styled by every rule here — they sit side by side in one toolbar,
+   so a difference between them reads as a mistake. */
+#view-menu, #palette-menu {
+  position: absolute;
+  z-index: 10;
+  min-width: 160px;
+  padding: 4px 0;
+  background: var(--vscode-menu-background, #252526);
+  color: var(--vscode-menu-foreground, #ccc);
+  border: 1px solid var(--vscode-menu-border, #454545);
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  font-family: var(--vscode-font-family, sans-serif);
+  font-size: 13px;
+}
+#view-menu[hidden], #palette-menu[hidden] { display: none; }
+#view-menu .item, #palette-menu .item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#view-menu .item:hover, #palette-menu .item:hover {
+  background: var(--vscode-menu-selectionBackground, #04395e);
+  color: var(--vscode-menu-selectionForeground, #fff);
+}
+#view-menu .item .codicon, #palette-menu .item .codicon { font-size: 14px; width: 16px; flex-shrink: 0; }
+#view-menu .item.off .codicon, #palette-menu .item.off .codicon { visibility: hidden; }
+/* The shortcut sits hard right, pushed there by margin-left:auto so the labels stay
+   left-aligned however wide the widest one is. Dimmed, as VS Code's own menus do. */
+#view-menu .item .shortcut, #palette-menu .item .shortcut {
+  margin-left: auto;
+  padding-left: 20px;
+  opacity: 0.7;
+}
+#view-menu .item:hover .shortcut, #palette-menu .item:hover .shortcut { opacity: 0.9; }
 #swatches { display: flex; gap: 3px; }
 .swatch {
   width: 16px;
@@ -293,10 +389,9 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
 </head>
 <body>
 <div id="toolbar">
-  <button id="charset-btn">${state.lowercase ? 'Lowercase charset' : 'Uppercase charset'}</button>
-  <button id="mci-btn"${state.showMci ? '' : ' class="mci-hidden"'}>MCI Commands</button>
-  <button id="cls-btn"${state.showCls ? '' : ' class="cls-hidden"'}>Show CLS ($93)</button>
-  <select id="palette-select">${paletteOptions}</select>
+  <button id="charset-btn">${state.lowercase ? 'Lowercase' : 'Uppercase'}</button>
+  <button id="view-btn" title="Show or hide MCI commands and CLS breaks">View <span class="codicon codicon-chevron-down"></span></button>
+  <button id="palette-btn" title="C64 colour palette">Palette <span class="codicon codicon-chevron-down"></span></button>
   <div id="swatches"></div>
   <button id="reset-bg-btn" title="Reset background to black">&#x21BA;</button>
   <div id="dimensions-group">
@@ -304,6 +399,8 @@ body { display: flex; flex-direction: column; background: #1a1a1a; }
     <span id="dimensions">${cols}\xD7${rowCount}</span>
   </div>
 </div>
+<div id="view-menu" hidden></div>
+<div id="palette-menu" hidden></div>
 <div id="content-wrap">
   <div id="canvas-container">
     <canvas id="content"></canvas>

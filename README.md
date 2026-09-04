@@ -24,7 +24,9 @@ Part of the **C\*Base Larry Mod v3.1** development package.
 
 ## Usage
 
-Open any `.seq` or `.petmate` file — the viewer activates automatically. Use the toolbar to toggle charset, palette, background color, MCI visibility, and (for `.seq`) CLS markers and column width.
+Open any `.seq` or `.petmate` file — the viewer activates automatically. Use the toolbar to toggle charset, palette and background color; for `.seq`, the **View** menu holds MCI visibility and the CLS markers, and the right edge of the canvas drags to change column width.
+
+**Keyboard shortcuts** (`.seq` viewer): `Alt+Shift+M` toggles MCI commands, `Alt+Shift+L` the CLS markers, and `Alt+1` to `Alt+6` pick a colour palette. They match C\*Base Disk Commander's, which shows the same toggles over the same files. Both are contributed commands, so they can be rebound from **Keyboard Shortcuts**.
 
 To open files via Command Palette: `Ctrl+Shift+P` → **C\*Base: Open .seq File...** or **C\*Base: Open .petmate File...**
 
@@ -49,13 +51,26 @@ code --install-extension cbase-petscii-viewer-0.4.0-beta.vsix
 
 ---
 
-## Disk Viewer Integration
+## Disk Commander Integration
 
-C\*Base PETSCII Viewer exposes a `cbase.decodeSeq` command that the [C\*Base Disk Viewer](https://github.com/cbase-larrymod/cbase-disk-viewer) uses to render SEQ files inline within the disk browser.
+The [C\*Base Disk Commander](https://github.com/cbase-larrymod/cbase-disk-commander) extension
+opens disk images and renders SEQ entries inline. It no longer calls this extension to do it —
+it decodes SEQ itself, so opening a SEQ from a disk image works whether or not this extension is
+installed.
 
-When a SEQ file inside a `.d64` disk image is opened, the disk viewer calls `cbase.decodeSeq` with the raw file bytes. The PETSCII viewer decodes the bytes and returns rendered character cell data; the disk viewer displays it in its own panel without opening a separate editor tab.
+The two share the decoder rather than each having its own. `src/petsciiDecoder.ts` and
+`src/petsciiMaps.ts` are byte-identical copies of the same files in both repositories, and a
+test in each fails if they stop being identical. Which byte is a colour, which is stripped and
+where a row breaks are decisions about the format; two extensions that disagreed about them
+would render one file two different ways. Fix a decoding bug in either repository and copy the
+file across — the test says so if you forget.
 
-See `docs/manual.md` for the full API reference.
+The `cbase.decodeSeq` command is still registered, and still accepts
+`{ data: number[], lowercase?: boolean }`, returning `{ chars, lowercase }`. Nothing in either
+extension calls it now.
+
+The `.seq` toolbar is deliberately Disk Commander's, down to the shortcut letters — see
+[Toolbar controls](docs/overview.md#toolbar-controls).
 
 ---
 

@@ -188,7 +188,7 @@
     "scripts": {
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "package": "npm test && npm run compile && node -e \"const fs=require('fs'); if(!fs.existsSync('dist'))fs.mkdirSync('dist')\" && vsce package -o dist/",
+        "package": "npm run compile && npm test && node -e \"const fs=require('fs'); if(!fs.existsSync('dist'))fs.mkdirSync('dist')\" && vsce package -o dist/",
         "test": "node test/viewKeys.test.js"
     },
     "devDependencies": {
